@@ -1,10 +1,66 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import '../theme/app_colors.dart';
 
-
-
-class AccountScreen extends StatelessWidget {
+class AccountScreen extends StatefulWidget {
   const AccountScreen({super.key});
+
+  @override
+  State<AccountScreen> createState() => _AccountScreenState();
+}
+
+class _AccountScreenState extends State<AccountScreen> {
+  final TextEditingController _nameController = TextEditingController();
+  final TextEditingController _ageController = TextEditingController();
+
+  String _selectedGender = 'Alle';
+  RangeValues _ageRange = const RangeValues(24, 36);
+  double _distance = 25;
+
+  String _initialName = 'Sofia';
+  String _initialAge = '28';
+  String _initialGender = 'Alle';
+  RangeValues _initialAgeRange = const RangeValues(24, 36);
+  double _initialDistance = 25;
+
+  @override
+  void initState() {
+    super.initState();
+    _nameController.text = _initialName;
+    _ageController.text = _initialAge;
+  }
+
+  @override
+  void dispose() {
+    _nameController.dispose();
+    _ageController.dispose();
+    super.dispose();
+  }
+
+  bool get _hasChanges {
+    return _nameController.text.trim() != _initialName ||
+        _ageController.text.trim() != _initialAge ||
+        _selectedGender != _initialGender ||
+        _ageRange.start != _initialAgeRange.start ||
+        _ageRange.end != _initialAgeRange.end ||
+        _distance != _initialDistance;
+  }
+
+  void _saveChanges() {
+    if (!_hasChanges) {
+      return;
+    }
+    setState(() {
+      _initialName = _nameController.text.trim();
+      _initialAge = _ageController.text.trim();
+      _initialGender = _selectedGender;
+      _initialAgeRange = _ageRange;
+      _initialDistance = _distance;
+    });
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('Dine ændringer er gemt')),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -16,16 +72,23 @@ class AccountScreen extends StatelessWidget {
         elevation: 0,
       ),
       body: SafeArea(
-        child: Padding(
+        child: SingleChildScrollView(
           padding: const EdgeInsets.all(16),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              // Profile card
+              Text(
+                'Account owner',
+                style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                      fontWeight: FontWeight.w700,
+                      color: AppColors.textSoft,
+                    ),
+              ),
+              const SizedBox(height: 10),
               Container(
                 padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
-                  color: Colors.white,
+                  color: AppColors.surface,
                   borderRadius: BorderRadius.circular(18),
                   border: Border.all(color: AppColors.border),
                   boxShadow: const [
@@ -36,148 +99,294 @@ class AccountScreen extends StatelessWidget {
                     ),
                   ],
                 ),
-                child: Row(
+                child: Column(
                   children: [
-                    Container(
-                      height: 56,
-                      width: 56,
-                      decoration: BoxDecoration(
-                        color: const Color(0xFFEDE7FF),
-                        borderRadius: BorderRadius.circular(18),
-                        border: Border.all(color: const Color(0xFFD9D0F5)),
-                      ),
-                      alignment: Alignment.center,
-                      child: const Icon(
-                        Icons.person_outline,
-                        color: Color(0xFF6C4AB6),
-                        size: 28,
-                      ),
+                    Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        CircleAvatar(
+                          radius: 30,
+                          backgroundColor: AppColors.surfaceTint,
+                          child: const Icon(
+                            Icons.person_outline,
+                            color: AppColors.primary,
+                            size: 28,
+                          ),
+                        ),
+                        const SizedBox(width: 14),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                'Navn',
+                                style: TextStyle(
+                                  fontSize: 12,
+                                  color: AppColors.textMuted,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                              const SizedBox(height: 6),
+                              TextField(
+                                controller: _nameController,
+                                onChanged: (_) => setState(() {}),
+                                decoration: InputDecoration(
+                                  isDense: true,
+                                  hintText: 'Indtast navn',
+                                  filled: true,
+                                  fillColor: AppColors.surfaceTint,
+                                  contentPadding: const EdgeInsets.symmetric(
+                                    horizontal: 12,
+                                    vertical: 10,
+                                  ),
+                                  border: OutlineInputBorder(
+                                    borderRadius: BorderRadius.circular(12),
+                                    borderSide: BorderSide.none,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
                     ),
-                    const SizedBox(width: 14),
-                    const Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            'Din profil',
-                            style: TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.w800,
+                    const SizedBox(height: 16),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                'Alder',
+                                style: TextStyle(
+                                  fontSize: 12,
+                                  color: AppColors.textMuted,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                              const SizedBox(height: 6),
+                              TextField(
+                                controller: _ageController,
+                                keyboardType: TextInputType.number,
+                                inputFormatters: [
+                                  FilteringTextInputFormatter.digitsOnly,
+                                ],
+                                onChanged: (_) => setState(() {}),
+                                decoration: InputDecoration(
+                                  isDense: true,
+                                  hintText: 'År',
+                                  filled: true,
+                                  fillColor: AppColors.surfaceTint,
+                                  contentPadding: const EdgeInsets.symmetric(
+                                    horizontal: 12,
+                                    vertical: 10,
+                                  ),
+                                  border: OutlineInputBorder(
+                                    borderRadius: BorderRadius.circular(12),
+                                    borderSide: BorderSide.none,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: Container(
+                            padding: const EdgeInsets.all(12),
+                            decoration: BoxDecoration(
+                              color: AppColors.surfaceTint,
+                              borderRadius: BorderRadius.circular(14),
+                            ),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  'Status',
+                                  style: TextStyle(
+                                    fontSize: 12,
+                                    color: AppColors.textMuted,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                                const SizedBox(height: 6),
+                                Text(
+                                  'Beta-profil',
+                                  style: TextStyle(
+                                    fontSize: 14,
+                                    color: AppColors.textSoft,
+                                    fontWeight: FontWeight.w700,
+                                  ),
+                                ),
+                              ],
                             ),
                           ),
-                          SizedBox(height: 6),
-                          Text(
-                            'Redigering kommer snart',
-                            style: TextStyle(
-                              fontSize: 13,
-                              color: Colors.black54,
-                              height: 1.3,
-                            ),
-                          ),
-                        ],
-                      ),
+                        ),
+                      ],
                     ),
                   ],
                 ),
               ),
-
-              const SizedBox(height: 16),
-
-              // Settings / info card
-              _AccountPlaceholderTile(
-                icon: Icons.lock_outline,
-                title: 'Privatliv & sikkerhed',
-                subtitle: 'Blokering, rapportering og tryghed',
+              const SizedBox(height: 20),
+              Text(
+                'Match preferencer',
+                style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                      fontWeight: FontWeight.w700,
+                      color: AppColors.textSoft,
+                    ),
               ),
-              _AccountPlaceholderTile(
-                icon: Icons.favorite_border,
-                title: 'Dine matches',
-                subtitle: 'Se dine nuværende forbindelser',
-              ),
-              _AccountPlaceholderTile(
-                icon: Icons.waving_hand_outlined,
-                title: 'Wingman Premium',
-                subtitle: 'Personlig hjælp til dine beskeder',
-              ),
-
-              const Spacer(),
-
-              // Footer note (calm, honest)
+              const SizedBox(height: 10),
               Container(
-                padding: const EdgeInsets.all(14),
+                padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
-                  color: const Color(0xFFF8F6FF),
-                  borderRadius: BorderRadius.circular(16),
-                  border: Border.all(color: const Color(0xFFE6E0F2)),
+                  color: AppColors.surface,
+                  borderRadius: BorderRadius.circular(18),
+                  border: Border.all(color: AppColors.border),
                 ),
-                child: const Text(
-                  'Denne del af appen er under udvikling.\n'
-                  'Fokus er lige nu på samtaler og connection.',
-                  textAlign: TextAlign.center,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Foretrukket køn',
+                      style: TextStyle(
+                        fontSize: 13,
+                        color: AppColors.textMuted,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    const SizedBox(height: 10),
+                    Wrap(
+                      spacing: 10,
+                      children: ['Mand', 'Kvinde', 'Alle']
+                          .map(
+                            (option) => ChoiceChip(
+                              label: Text(option),
+                              selected: _selectedGender == option,
+                              onSelected: (_) {
+                                setState(() {
+                                  _selectedGender = option;
+                                });
+                              },
+                              selectedColor: AppColors.primary.withOpacity(0.15),
+                              backgroundColor: AppColors.surfaceTint,
+                              labelStyle: TextStyle(
+                                color: _selectedGender == option
+                                    ? AppColors.primaryDeep
+                                    : AppColors.textSoft,
+                                fontWeight: FontWeight.w600,
+                              ),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(12),
+                                side: BorderSide(
+                                  color: _selectedGender == option
+                                      ? AppColors.primary
+                                      : AppColors.border,
+                                ),
+                              ),
+                            ),
+                          )
+                          .toList(),
+                    ),
+                    const Padding(
+                      padding: EdgeInsets.symmetric(vertical: 14),
+                      child: Divider(height: 1),
+                    ),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(
+                          'Aldersinterval',
+                          style: TextStyle(
+                            fontSize: 13,
+                            color: AppColors.textMuted,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                        Text(
+                          '${_ageRange.start.round()}–${_ageRange.end.round()} år',
+                          style: TextStyle(
+                            fontWeight: FontWeight.w700,
+                            color: AppColors.textSoft,
+                          ),
+                        ),
+                      ],
+                    ),
+                    RangeSlider(
+                      values: _ageRange,
+                      min: 18,
+                      max: 60,
+                      divisions: 42,
+                      onChanged: (value) {
+                        setState(() {
+                          _ageRange = value;
+                        });
+                      },
+                      activeColor: AppColors.primary,
+                      inactiveColor: AppColors.border,
+                    ),
+                    const Padding(
+                      padding: EdgeInsets.symmetric(vertical: 6),
+                      child: Divider(height: 1),
+                    ),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(
+                          'Maks. afstand',
+                          style: TextStyle(
+                            fontSize: 13,
+                            color: AppColors.textMuted,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                        Text(
+                          '${_distance.round()} km',
+                          style: TextStyle(
+                            fontWeight: FontWeight.w700,
+                            color: AppColors.textSoft,
+                          ),
+                        ),
+                      ],
+                    ),
+                    Slider(
+                      value: _distance,
+                      min: 1,
+                      max: 100,
+                      divisions: 99,
+                      onChanged: (value) {
+                        setState(() {
+                          _distance = value;
+                        });
+                      },
+                      activeColor: AppColors.primary,
+                      inactiveColor: AppColors.border,
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 18),
+              ElevatedButton(
+                onPressed: _hasChanges ? _saveChanges : null,
+                style: ElevatedButton.styleFrom(
+                  padding: const EdgeInsets.symmetric(vertical: 14),
+                  backgroundColor: AppColors.primary,
+                  disabledBackgroundColor: AppColors.border,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(14),
+                  ),
+                  elevation: 0,
+                ),
+                child: Text(
+                  'Gem',
                   style: TextStyle(
-                    fontSize: 12,
-                    color: Colors.black54,
-                    height: 1.4,
+                    color: _hasChanges ? Colors.white : AppColors.textMuted,
+                    fontWeight: FontWeight.w700,
                   ),
                 ),
               ),
             ],
           ),
-        ),
-      ),
-    );
-  }
-}
-
-class _AccountPlaceholderTile extends StatelessWidget {
-  final IconData icon;
-  final String title;
-  final String subtitle;
-
-  const _AccountPlaceholderTile({
-    required this.icon,
-    required this.title,
-    required this.subtitle,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 10),
-      child: Container(
-        padding: const EdgeInsets.all(14),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: const Color(0xFFE6E0F2)),
-        ),
-        child: Row(
-          children: [
-            Icon(icon, color: const Color(0xFF6C4AB6)),
-            const SizedBox(width: 12),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    title,
-                    style: const TextStyle(
-                      fontWeight: FontWeight.w700,
-                      fontSize: 14,
-                    ),
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    subtitle,
-                    style: const TextStyle(
-                      fontSize: 12,
-                      color: Colors.black54,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ],
         ),
       ),
     );
