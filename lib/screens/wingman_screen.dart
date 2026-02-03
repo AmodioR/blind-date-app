@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../theme/app_colors.dart';
 
 class WingmanScreen extends StatelessWidget {
   const WingmanScreen({super.key});
@@ -6,71 +7,97 @@ class WingmanScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('AI Wingman'),
-        centerTitle: true,
-        backgroundColor: const Color(0xFFF5F0FF),
-        elevation: 0,
-      ),
-      body: Padding(
-        padding: const EdgeInsets.fromLTRB(20, 24, 20, 28),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            const Text(
-              'AI Wingman',
-              style: TextStyle(
-                fontSize: 28,
-                fontWeight: FontWeight.w800,
-                color: Color(0xFF1E1B2E),
-              ),
-            ),
-            const SizedBox(height: 12),
-            const Text(
-              'Få hurtig og diskret sparring på dine beskeder, når du vil fremstå'
-              ' naturlig og sikker.',
-              style: TextStyle(
-                fontSize: 16,
-                height: 1.5,
-                color: Color(0xFF5E5A71),
-              ),
-            ),
-            const SizedBox(height: 20),
-            const Text(
-              'Det hjælper jeg med:',
-              style: TextStyle(
-                fontSize: 14,
-                fontWeight: FontWeight.w700,
-                color: Color(0xFF3D3855),
-              ),
-            ),
-            const SizedBox(height: 12),
-            _InfoBullet(text: 'Hvad kan jeg svare?'),
-            const SizedBox(height: 10),
-            _InfoBullet(text: 'Hvad kan jeg spørge om?'),
-            const SizedBox(height: 10),
-            _InfoBullet(text: 'Er det her for meget?'),
-            const Spacer(),
-            ElevatedButton(
-              onPressed: () {},
-              style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF6C4AB6),
-                padding: const EdgeInsets.symmetric(vertical: 22),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(28),
-                ),
-                elevation: 8,
-              ),
-              child: const Text(
-                'Abonnér',
-                style: TextStyle(
-                  fontSize: 20,
-                  fontWeight: FontWeight.w700,
-                  color: Colors.white,
+      backgroundColor: AppColors.bg,
+      body: SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(20, 24, 20, 28),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              const SizedBox(height: 4),
+              const Center(
+                child: Text(
+                  'AI Wingman',
+                  style: TextStyle(
+                    fontSize: 26,
+                    fontWeight: FontWeight.w800,
+                    color: AppColors.textSoft,
+                  ),
                 ),
               ),
-            ),
-          ],
+              const SizedBox(height: 18),
+              Container(
+                padding: const EdgeInsets.all(20),
+                decoration: BoxDecoration(
+                  color: AppColors.surface,
+                  borderRadius: BorderRadius.circular(24),
+                  border: Border.all(color: AppColors.border),
+                  boxShadow: const [
+                    BoxShadow(
+                      color: Color(0x1A000000),
+                      blurRadius: 18,
+                      offset: Offset(0, 10),
+                    ),
+                    BoxShadow(
+                      color: Color(0x12000000),
+                      blurRadius: 40,
+                      offset: Offset(0, 20),
+                    ),
+                  ],
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: const [
+                    Text(
+                      'Få ro i maven med korte, sikre svar der føles som dig.',
+                      style: TextStyle(
+                        fontSize: 16,
+                        height: 1.5,
+                        color: AppColors.textMuted,
+                      ),
+                    ),
+                    SizedBox(height: 18),
+                    Text(
+                      'Det hjælper jeg med:',
+                      style: TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w700,
+                        color: AppColors.textSoft,
+                      ),
+                    ),
+                    SizedBox(height: 12),
+                    _InfoBullet(text: 'Hvad kan jeg svare?'),
+                    SizedBox(height: 10),
+                    _InfoBullet(text: 'Hvad kan jeg spørge om?'),
+                    SizedBox(height: 10),
+                    _InfoBullet(text: 'Er det her for meget?'),
+                    SizedBox(height: 18),
+                    _ValueCueRow(),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 20),
+              ElevatedButton(
+                onPressed: () {},
+                style: ElevatedButton.styleFrom(
+                  padding: const EdgeInsets.symmetric(vertical: 22),
+                  backgroundColor: AppColors.primary,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(28),
+                  ),
+                  elevation: 8,
+                ),
+                child: const Text(
+                  'Abonnér',
+                  style: TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.w700,
+                    color: Colors.white,
+                  ),
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );
@@ -92,7 +119,7 @@ class _InfoBullet extends StatelessWidget {
           height: 6,
           width: 6,
           decoration: const BoxDecoration(
-            color: Color(0xFF6C4AB6),
+            color: AppColors.primary,
             shape: BoxShape.circle,
           ),
         ),
@@ -103,11 +130,53 @@ class _InfoBullet extends StatelessWidget {
             style: const TextStyle(
               fontSize: 16,
               height: 1.4,
-              color: Color(0xFF3D3855),
+              color: AppColors.textSoft,
             ),
           ),
         ),
       ],
+    );
+  }
+}
+
+class _ValueCueRow extends StatelessWidget {
+  const _ValueCueRow();
+
+  @override
+  Widget build(BuildContext context) {
+    return Wrap(
+      spacing: 10,
+      runSpacing: 8,
+      children: const [
+        _ValueChip(text: 'Mere selvtillid'),
+        _ValueChip(text: 'Undgå akavede svar'),
+      ],
+    );
+  }
+}
+
+class _ValueChip extends StatelessWidget {
+  const _ValueChip({required this.text});
+
+  final String text;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+      decoration: BoxDecoration(
+        color: AppColors.surfaceTint,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: AppColors.border),
+      ),
+      child: Text(
+        text,
+        style: const TextStyle(
+          fontSize: 12,
+          fontWeight: FontWeight.w600,
+          color: AppColors.textMuted,
+        ),
+      ),
     );
   }
 }
