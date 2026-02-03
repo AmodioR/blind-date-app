@@ -1,6 +1,4 @@
 import 'package:flutter/material.dart';
-import '../theme/app_colors.dart';
-
 
 class WingmanScreen extends StatelessWidget {
   const WingmanScreen({super.key});
@@ -9,63 +7,64 @@ class WingmanScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Wingman'),
+        title: const Text('AI Wingman'),
         centerTitle: true,
         backgroundColor: const Color(0xFFF5F0FF),
         elevation: 0,
       ),
       body: Padding(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.fromLTRB(20, 24, 20, 28),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            Container(
-              padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(18),
-                border: Border.all(color: AppColors.border),
-                boxShadow: const [
-                  BoxShadow(
-                    color: Color(0x1A000000),
-                    blurRadius: 18,
-                    offset: Offset(0, 10),
-                  ),
-                ],
-              ),
-              child: const Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'Wingman Premium 👋',
-                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.w800),
-                  ),
-                  SizedBox(height: 8),
-                  Text(
-                    'Få hjælp til dine beskeder:\n'
-                    '• Hvad kan jeg svare?\n'
-                    '• Hvad kan jeg spørge om?\n'
-                    '• Er det her for meget?',
-                    style: TextStyle(color: Colors.black54, height: 1.35),
-                  ),
-                ],
+            const Text(
+              'AI Wingman',
+              style: TextStyle(
+                fontSize: 28,
+                fontWeight: FontWeight.w800,
+                color: Color(0xFF1E1B2E),
               ),
             ),
+            const SizedBox(height: 12),
+            const Text(
+              'Få hurtig og diskret sparring på dine beskeder, når du vil fremstå'
+              ' naturlig og sikker.',
+              style: TextStyle(
+                fontSize: 16,
+                height: 1.5,
+                color: Color(0xFF5E5A71),
+              ),
+            ),
+            const SizedBox(height: 20),
+            const Text(
+              'Det hjælper jeg med:',
+              style: TextStyle(
+                fontSize: 14,
+                fontWeight: FontWeight.w700,
+                color: Color(0xFF3D3855),
+              ),
+            ),
+            const SizedBox(height: 12),
+            _InfoBullet(text: 'Hvad kan jeg svare?'),
+            const SizedBox(height: 10),
+            _InfoBullet(text: 'Hvad kan jeg spørge om?'),
+            const SizedBox(height: 10),
+            _InfoBullet(text: 'Er det her for meget?'),
             const Spacer(),
             ElevatedButton(
-              onPressed: null, // kommer senere
+              onPressed: () {},
               style: ElevatedButton.styleFrom(
                 backgroundColor: const Color(0xFF6C4AB6),
-                disabledBackgroundColor: const Color(0xFF6C4AB6),
-                padding: const EdgeInsets.symmetric(vertical: 16),
+                padding: const EdgeInsets.symmetric(vertical: 22),
                 shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(16),
+                  borderRadius: BorderRadius.circular(28),
                 ),
+                elevation: 8,
               ),
               child: const Text(
-                'Abonnér (kommer snart)',
+                'Abonnér',
                 style: TextStyle(
-                  fontSize: 16,
+                  fontSize: 20,
                   fontWeight: FontWeight.w700,
                   color: Colors.white,
                 ),
@@ -74,6 +73,41 @@ class WingmanScreen extends StatelessWidget {
           ],
         ),
       ),
+    );
+  }
+}
+
+class _InfoBullet extends StatelessWidget {
+  const _InfoBullet({required this.text});
+
+  final String text;
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Container(
+          margin: const EdgeInsets.only(top: 6),
+          height: 6,
+          width: 6,
+          decoration: const BoxDecoration(
+            color: Color(0xFF6C4AB6),
+            shape: BoxShape.circle,
+          ),
+        ),
+        const SizedBox(width: 12),
+        Expanded(
+          child: Text(
+            text,
+            style: const TextStyle(
+              fontSize: 16,
+              height: 1.4,
+              color: Color(0xFF3D3855),
+            ),
+          ),
+        ),
+      ],
     );
   }
 }
