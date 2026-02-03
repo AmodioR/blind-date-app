@@ -64,6 +64,9 @@ class _AccountScreenState extends State<AccountScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final double bottomPadding = MediaQuery.of(context).padding.bottom +
+        kBottomNavigationBarHeight +
+        12;
     return Scaffold(
       backgroundColor: Colors.transparent,
       body: Container(
@@ -403,24 +406,28 @@ class _AccountScreenState extends State<AccountScreen> {
                         ),
                         const SizedBox(height: 22),
                         const Spacer(),
-                        ElevatedButton(
-                          onPressed: _hasChanges ? _saveChanges : null,
-                          style: ElevatedButton.styleFrom(
-                            padding: const EdgeInsets.symmetric(vertical: 22),
-                            backgroundColor: AppColors.primary,
-                            disabledBackgroundColor: AppColors.border,
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(28),
+                        Padding(
+                          padding: EdgeInsets.only(bottom: bottomPadding),
+                          child: ElevatedButton(
+                            onPressed: _hasChanges ? _saveChanges : null,
+                            style: ElevatedButton.styleFrom(
+                              padding: const EdgeInsets.symmetric(vertical: 22),
+                              backgroundColor: AppColors.primary,
+                              disabledBackgroundColor: AppColors.border,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(28),
+                              ),
+                              elevation: 8,
                             ),
-                            elevation: 8,
-                          ),
-                          child: Text(
-                            'Gem',
-                            style: TextStyle(
-                              color:
-                                  _hasChanges ? Colors.white : AppColors.textMuted,
-                              fontWeight: FontWeight.w700,
-                              fontSize: 20,
+                            child: Text(
+                              'Gem',
+                              style: TextStyle(
+                                color: _hasChanges
+                                    ? Colors.white
+                                    : AppColors.textMuted,
+                                fontWeight: FontWeight.w700,
+                                fontSize: 20,
+                              ),
                             ),
                           ),
                         ),
