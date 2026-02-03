@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../theme/app_colors.dart';
 import 'secret_chat_screen.dart';
 
 class OpenChatsScreen extends StatelessWidget {
@@ -41,12 +42,16 @@ class OpenChatsScreen extends StatelessWidget {
         backgroundColor: const Color(0xFFF5F0FF),
         elevation: 0,
       ),
-      body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.fromLTRB(16, 12, 16, 0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
+      body: Container(
+        decoration: const BoxDecoration(
+          gradient: AppColors.premiumGradient,
+        ),
+        child: SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(16, 12, 16, 0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
               // Lille intro (calm, app-like)
               Padding(
                 padding: const EdgeInsets.only(bottom: 10),
@@ -85,7 +90,8 @@ class OpenChatsScreen extends StatelessWidget {
                         },
                       ),
               ),
-            ],
+              ],
+            ),
           ),
         ),
       ),
