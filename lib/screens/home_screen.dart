@@ -31,11 +31,11 @@ body: Container(
         children: [
           // ---- ALT dit nuværende indhold skal ligge herinde ----
 
-          const SizedBox(height: 8),
+          const SizedBox(height: 4),
 
           Center(
   child: SizedBox(
-  height: 320,
+  height: 260,
   child: Image.asset(
   'images/logo2.png',
   fit: BoxFit.contain,
@@ -43,11 +43,9 @@ body: Container(
 )
           ),
 
-const SizedBox(height: 12),
+const SizedBox(height: 8),
 
-const SizedBox(height: 50),
-
-        const Spacer(),
+        const SizedBox(height: 16),
 
         // Wingman teaser (small, app-like)
         InkWell(
