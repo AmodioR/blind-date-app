@@ -65,377 +65,345 @@ class _AccountScreenState extends State<AccountScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.transparent,
-      appBar: AppBar(
-        title: const Text('Min konto'),
-        centerTitle: true,
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        flexibleSpace: Container(
-          decoration: const BoxDecoration(
-            gradient: LinearGradient(
-              begin: Alignment.topCenter,
-              end: Alignment.bottomCenter,
-              colors: [
-                Color(0xFFF2E9FF),
-                Color(0xFFEAD9FF),
-                Color(0xFFF8ECFF),
-              ],
-            ),
-          ),
-        ),
-      ),
-      body: Container(
-        decoration: const BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-            colors: [
-              Color(0xFFF2E9FF),
-              Color(0xFFEAD9FF),
-              Color(0xFFF8ECFF),
-            ],
-          ),
-        ),
-        child: SafeArea(
-          child: SingleChildScrollView(
-            padding: const EdgeInsets.all(16),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                Text(
-                  'Account owner',
-                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                        fontWeight: FontWeight.w700,
-                        color: AppColors.textSoft,
-                      ),
+      backgroundColor: AppColors.bg,
+      body: SafeArea(
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.fromLTRB(16, 12, 16, 16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Text(
+                'Account owner',
+                style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                      fontWeight: FontWeight.w700,
+                      color: AppColors.textSoft,
+                    ),
+              ),
+              const SizedBox(height: 12),
+              Container(
+                padding: const EdgeInsets.all(18),
+                decoration: BoxDecoration(
+                  color: AppColors.surface,
+                  borderRadius: BorderRadius.circular(20),
+                  border: Border.all(color: AppColors.border),
+                  boxShadow: const [
+                    BoxShadow(
+                      color: Color(0x1A000000),
+                      blurRadius: 18,
+                      offset: Offset(0, 10),
+                    ),
+                    BoxShadow(
+                      color: Color(0x12000000),
+                      blurRadius: 40,
+                      offset: Offset(0, 20),
+                    ),
+                  ],
                 ),
-                const SizedBox(height: 12),
-                Container(
-                  padding: const EdgeInsets.all(18),
-                  decoration: BoxDecoration(
-                    color: AppColors.surface,
-                    borderRadius: BorderRadius.circular(20),
-                    border: Border.all(color: AppColors.border),
-                    boxShadow: const [
-                      BoxShadow(
-                        color: Color(0x1A000000),
-                        blurRadius: 18,
-                        offset: Offset(0, 10),
-                      ),
-                      BoxShadow(
-                        color: Color(0x12000000),
-                        blurRadius: 40,
-                        offset: Offset(0, 20),
-                      ),
-                    ],
-                  ),
-                  child: Column(
-                    children: [
-                      Row(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          CircleAvatar(
-                            radius: 30,
-                            backgroundColor: AppColors.surfaceTint,
-                            child: const Icon(
-                              Icons.person_outline,
-                              color: AppColors.primary,
-                              size: 28,
-                            ),
+                child: Column(
+                  children: [
+                    Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        CircleAvatar(
+                          radius: 30,
+                          backgroundColor: AppColors.surfaceTint,
+                          child: const Icon(
+                            Icons.person_outline,
+                            color: AppColors.primary,
+                            size: 28,
                           ),
-                          const SizedBox(width: 14),
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  'Navn',
-                                  style: TextStyle(
-                                    fontSize: 12,
-                                    color: AppColors.textMuted,
-                                    fontWeight: FontWeight.w600,
-                                  ),
-                                ),
-                                const SizedBox(height: 6),
-                                TextField(
-                                  controller: _nameController,
-                                  onChanged: (_) => setState(() {}),
-                                  decoration: InputDecoration(
-                                    isDense: true,
-                                    hintText: 'Indtast navn',
-                                    filled: true,
-                                    fillColor: AppColors.surfaceTint,
-                                    contentPadding: const EdgeInsets.symmetric(
-                                      horizontal: 12,
-                                      vertical: 10,
-                                    ),
-                                    border: OutlineInputBorder(
-                                      borderRadius: BorderRadius.circular(12),
-                                      borderSide: BorderSide.none,
-                                    ),
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 18),
-                      const Divider(height: 1, color: AppColors.border),
-                      const SizedBox(height: 18),
-                      Row(
-                        children: [
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  'Alder',
-                                  style: TextStyle(
-                                    fontSize: 12,
-                                    color: AppColors.textMuted,
-                                    fontWeight: FontWeight.w600,
-                                  ),
-                                ),
-                                const SizedBox(height: 6),
-                                TextField(
-                                  controller: _ageController,
-                                  keyboardType: TextInputType.number,
-                                  inputFormatters: [
-                                    FilteringTextInputFormatter.digitsOnly,
-                                  ],
-                                  onChanged: (_) => setState(() {}),
-                                  decoration: InputDecoration(
-                                    isDense: true,
-                                    hintText: 'År',
-                                    filled: true,
-                                    fillColor: AppColors.surfaceTint,
-                                    contentPadding:
-                                        const EdgeInsets.symmetric(
-                                      horizontal: 12,
-                                      vertical: 10,
-                                    ),
-                                    border: OutlineInputBorder(
-                                      borderRadius: BorderRadius.circular(12),
-                                      borderSide: BorderSide.none,
-                                    ),
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                          const SizedBox(width: 12),
-                          Expanded(
-                            child: Container(
-                              padding: const EdgeInsets.all(12),
-                              decoration: BoxDecoration(
-                                color: AppColors.surfaceTint,
-                                borderRadius: BorderRadius.circular(14),
-                              ),
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    'Status',
-                                    style: TextStyle(
-                                      fontSize: 12,
-                                      color: AppColors.textMuted,
-                                      fontWeight: FontWeight.w600,
-                                    ),
-                                  ),
-                                  const SizedBox(height: 6),
-                                  Text(
-                                    'Beta-profil',
-                                    style: TextStyle(
-                                      fontSize: 14,
-                                      color: AppColors.textSoft,
-                                      fontWeight: FontWeight.w700,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ],
-                  ),
-                ),
-                const SizedBox(height: 24),
-                Text(
-                  'Match preferencer',
-                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                        fontWeight: FontWeight.w700,
-                        color: AppColors.textSoft,
-                      ),
-                ),
-                const SizedBox(height: 12),
-                Container(
-                  padding: const EdgeInsets.all(18),
-                  decoration: BoxDecoration(
-                    color: AppColors.surface,
-                    borderRadius: BorderRadius.circular(20),
-                    border: Border.all(color: AppColors.border),
-                    boxShadow: const [
-                      BoxShadow(
-                        color: Color(0x1A000000),
-                        blurRadius: 18,
-                        offset: Offset(0, 10),
-                      ),
-                      BoxShadow(
-                        color: Color(0x12000000),
-                        blurRadius: 40,
-                        offset: Offset(0, 20),
-                      ),
-                    ],
-                  ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        'Foretrukket køn',
-                        style: TextStyle(
-                          fontSize: 13,
-                          color: AppColors.textMuted,
-                          fontWeight: FontWeight.w600,
                         ),
-                      ),
-                      const SizedBox(height: 12),
-                      Wrap(
-                        spacing: 10,
-                        runSpacing: 8,
-                        children: ['Mand', 'Kvinde', 'Alle']
-                            .map(
-                              (option) => ChoiceChip(
-                                label: Text(option),
-                                selected: _selectedGender == option,
-                                onSelected: (_) {
-                                  setState(() {
-                                    _selectedGender = option;
-                                  });
-                                },
-                                selectedColor:
-                                    AppColors.primary.withOpacity(0.15),
-                                backgroundColor: AppColors.surfaceTint,
-                                labelStyle: TextStyle(
-                                  color: _selectedGender == option
-                                      ? AppColors.primaryDeep
-                                      : AppColors.textSoft,
+                        const SizedBox(width: 14),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                'Navn',
+                                style: TextStyle(
+                                  fontSize: 12,
+                                  color: AppColors.textMuted,
                                   fontWeight: FontWeight.w600,
                                 ),
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(12),
-                                  side: BorderSide(
-                                    color: _selectedGender == option
-                                        ? AppColors.primary
-                                        : AppColors.border,
+                              ),
+                              const SizedBox(height: 6),
+                              TextField(
+                                controller: _nameController,
+                                onChanged: (_) => setState(() {}),
+                                decoration: InputDecoration(
+                                  isDense: true,
+                                  hintText: 'Indtast navn',
+                                  filled: true,
+                                  fillColor: AppColors.surfaceTint,
+                                  contentPadding: const EdgeInsets.symmetric(
+                                    horizontal: 12,
+                                    vertical: 10,
+                                  ),
+                                  border: OutlineInputBorder(
+                                    borderRadius: BorderRadius.circular(12),
+                                    borderSide: BorderSide.none,
                                   ),
                                 ),
                               ),
-                            )
-                            .toList(),
-                      ),
-                      const Padding(
-                        padding: EdgeInsets.symmetric(vertical: 16),
-                        child: Divider(height: 1),
-                      ),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Text(
-                            'Aldersinterval',
-                            style: TextStyle(
-                              fontSize: 13,
-                              color: AppColors.textMuted,
-                              fontWeight: FontWeight.w600,
-                            ),
+                            ],
                           ),
-                          Text(
-                            '${_ageRange.start.round()}–${_ageRange.end.round()} år',
-                            style: TextStyle(
-                              fontWeight: FontWeight.w700,
-                              color: AppColors.textSoft,
-                            ),
-                          ),
-                        ],
-                      ),
-                      RangeSlider(
-                        values: _ageRange,
-                        min: 18,
-                        max: 60,
-                        divisions: 42,
-                        onChanged: (value) {
-                          setState(() {
-                            _ageRange = value;
-                          });
-                        },
-                        activeColor: AppColors.primary,
-                        inactiveColor: AppColors.border,
-                      ),
-                      const Padding(
-                        padding: EdgeInsets.symmetric(vertical: 10),
-                        child: Divider(height: 1),
-                      ),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Text(
-                            'Maks. afstand',
-                            style: TextStyle(
-                              fontSize: 13,
-                              color: AppColors.textMuted,
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
-                          Text(
-                            '${_distance.round()} km',
-                            style: TextStyle(
-                              fontWeight: FontWeight.w700,
-                              color: AppColors.textSoft,
-                            ),
-                          ),
-                        ],
-                      ),
-                      Slider(
-                        value: _distance,
-                        min: 1,
-                        max: 100,
-                        divisions: 99,
-                        onChanged: (value) {
-                          setState(() {
-                            _distance = value;
-                          });
-                        },
-                        activeColor: AppColors.primary,
-                        inactiveColor: AppColors.border,
-                      ),
-                    ],
-                  ),
-                ),
-                const SizedBox(height: 22),
-                ElevatedButton(
-                  onPressed: _hasChanges ? _saveChanges : null,
-                  style: ElevatedButton.styleFrom(
-                    padding: const EdgeInsets.symmetric(vertical: 22),
-                    backgroundColor: const Color(0xFF6C4AB6),
-                    disabledBackgroundColor: AppColors.border,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(28),
+                        ),
+                      ],
                     ),
-                    elevation: 8,
-                  ),
-                  child: Text(
-                    'Gem',
-                    style: TextStyle(
-                      color: _hasChanges ? Colors.white : AppColors.textMuted,
+                    const SizedBox(height: 18),
+                    const Divider(height: 1, color: AppColors.border),
+                    const SizedBox(height: 18),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                'Alder',
+                                style: TextStyle(
+                                  fontSize: 12,
+                                  color: AppColors.textMuted,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                              const SizedBox(height: 6),
+                              TextField(
+                                controller: _ageController,
+                                keyboardType: TextInputType.number,
+                                inputFormatters: [
+                                  FilteringTextInputFormatter.digitsOnly,
+                                ],
+                                onChanged: (_) => setState(() {}),
+                                decoration: InputDecoration(
+                                  isDense: true,
+                                  hintText: 'År',
+                                  filled: true,
+                                  fillColor: AppColors.surfaceTint,
+                                  contentPadding:
+                                      const EdgeInsets.symmetric(
+                                    horizontal: 12,
+                                    vertical: 10,
+                                  ),
+                                  border: OutlineInputBorder(
+                                    borderRadius: BorderRadius.circular(12),
+                                    borderSide: BorderSide.none,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: Container(
+                            padding: const EdgeInsets.all(12),
+                            decoration: BoxDecoration(
+                              color: AppColors.surfaceTint,
+                              borderRadius: BorderRadius.circular(14),
+                            ),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  'Status',
+                                  style: TextStyle(
+                                    fontSize: 12,
+                                    color: AppColors.textMuted,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                                const SizedBox(height: 6),
+                                Text(
+                                  'Beta-profil',
+                                  style: TextStyle(
+                                    fontSize: 14,
+                                    color: AppColors.textSoft,
+                                    fontWeight: FontWeight.w700,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 24),
+              Text(
+                'Match preferencer',
+                style: Theme.of(context).textTheme.titleMedium?.copyWith(
                       fontWeight: FontWeight.w700,
-                      fontSize: 16,
+                      color: AppColors.textSoft,
                     ),
+              ),
+              const SizedBox(height: 12),
+              Container(
+                padding: const EdgeInsets.all(18),
+                decoration: BoxDecoration(
+                  color: AppColors.surface,
+                  borderRadius: BorderRadius.circular(20),
+                  border: Border.all(color: AppColors.border),
+                  boxShadow: const [
+                    BoxShadow(
+                      color: Color(0x1A000000),
+                      blurRadius: 18,
+                      offset: Offset(0, 10),
+                    ),
+                    BoxShadow(
+                      color: Color(0x12000000),
+                      blurRadius: 40,
+                      offset: Offset(0, 20),
+                    ),
+                  ],
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Foretrukket køn',
+                      style: TextStyle(
+                        fontSize: 13,
+                        color: AppColors.textMuted,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    Wrap(
+                      spacing: 10,
+                      runSpacing: 8,
+                      children: ['Mand', 'Kvinde', 'Alle']
+                          .map(
+                            (option) => ChoiceChip(
+                              label: Text(option),
+                              selected: _selectedGender == option,
+                              onSelected: (_) {
+                                setState(() {
+                                  _selectedGender = option;
+                                });
+                              },
+                              selectedColor:
+                                  AppColors.primary.withOpacity(0.15),
+                              backgroundColor: AppColors.surfaceTint,
+                              labelStyle: TextStyle(
+                                color: _selectedGender == option
+                                    ? AppColors.primaryDeep
+                                    : AppColors.textSoft,
+                                fontWeight: FontWeight.w600,
+                              ),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(12),
+                                side: BorderSide(
+                                  color: _selectedGender == option
+                                      ? AppColors.primary
+                                      : AppColors.border,
+                                ),
+                              ),
+                            ),
+                          )
+                          .toList(),
+                    ),
+                    const Padding(
+                      padding: EdgeInsets.symmetric(vertical: 16),
+                      child: Divider(height: 1),
+                    ),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(
+                          'Aldersinterval',
+                          style: TextStyle(
+                            fontSize: 13,
+                            color: AppColors.textMuted,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                        Text(
+                          '${_ageRange.start.round()}–${_ageRange.end.round()} år',
+                          style: TextStyle(
+                            fontWeight: FontWeight.w700,
+                            color: AppColors.textSoft,
+                          ),
+                        ),
+                      ],
+                    ),
+                    RangeSlider(
+                      values: _ageRange,
+                      min: 18,
+                      max: 60,
+                      divisions: 42,
+                      onChanged: (value) {
+                        setState(() {
+                          _ageRange = value;
+                        });
+                      },
+                      activeColor: AppColors.primary,
+                      inactiveColor: AppColors.border,
+                    ),
+                    const Padding(
+                      padding: EdgeInsets.symmetric(vertical: 10),
+                      child: Divider(height: 1),
+                    ),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(
+                          'Maks. afstand',
+                          style: TextStyle(
+                            fontSize: 13,
+                            color: AppColors.textMuted,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                        Text(
+                          '${_distance.round()} km',
+                          style: TextStyle(
+                            fontWeight: FontWeight.w700,
+                            color: AppColors.textSoft,
+                          ),
+                        ),
+                      ],
+                    ),
+                    Slider(
+                      value: _distance,
+                      min: 1,
+                      max: 100,
+                      divisions: 99,
+                      onChanged: (value) {
+                        setState(() {
+                          _distance = value;
+                        });
+                      },
+                      activeColor: AppColors.primary,
+                      inactiveColor: AppColors.border,
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 22),
+              ElevatedButton(
+                onPressed: _hasChanges ? _saveChanges : null,
+                style: ElevatedButton.styleFrom(
+                  padding: const EdgeInsets.symmetric(vertical: 22),
+                  backgroundColor: AppColors.primary,
+                  disabledBackgroundColor: AppColors.border,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(28),
+                  ),
+                  elevation: 8,
+                ),
+                child: Text(
+                  'Gem',
+                  style: TextStyle(
+                    color: _hasChanges ? Colors.white : AppColors.textMuted,
+                    fontWeight: FontWeight.w700,
+                    fontSize: 20,
                   ),
                 ),
-              ],
-            ),
+              ),
+            ],
           ),
         ),
       ),
