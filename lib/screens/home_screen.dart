@@ -31,7 +31,7 @@ body: Container(
                       child: SizedBox(
                         height: 260,
                         child: Image.asset(
-                          'images/logo2.png',
+                          'assets/images/logo2.png',
                           fit: BoxFit.contain,
                         ),
                       ),
