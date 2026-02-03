@@ -21,5 +21,15 @@ class AppColors {
   static const border = Color(0xFFE7DDF7);    // lidt varmere end E6E0F2
   static const textSoft = Color(0xFF3A3347);  // varm mørk (i stedet for sort)
   static const textMuted = Color(0xFF6E647F); // varm grå/lilla
-}
 
+  static const premiumGradient = LinearGradient(
+    begin: Alignment.topLeft,
+    end: Alignment.bottomRight,
+    colors: [
+      Color(0xFFFFF6D8),
+      Color(0xFFFFD5A6),
+      Color(0xFFFFC4DA),
+      Color(0xFFD9C8FF),
+    ],
+  );
+}

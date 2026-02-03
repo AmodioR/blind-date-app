@@ -10,18 +10,9 @@ class HomeScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-
 body: Container(
   decoration: const BoxDecoration(
-    gradient: LinearGradient(
-      begin: Alignment.topLeft,
-      end: Alignment.bottomRight,
-      colors: [
-        Color(0xFFFFF7E9),
-        Color(0xFFFFF0E3),
-        Color(0xFFFFEAF2),
-      ],
-    ),
+    gradient: AppColors.premiumGradient,
   ),
   child: SafeArea(
     child: Padding(

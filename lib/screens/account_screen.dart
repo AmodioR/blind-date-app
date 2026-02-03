@@ -65,13 +65,17 @@ class _AccountScreenState extends State<AccountScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.bg,
-      body: SafeArea(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.fromLTRB(16, 12, 16, 16),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
+      backgroundColor: Colors.transparent,
+      body: Container(
+        decoration: const BoxDecoration(
+          gradient: AppColors.premiumGradient,
+        ),
+        child: SafeArea(
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.fromLTRB(16, 12, 16, 16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
               Text(
                 'Account owner',
                 style: Theme.of(context).textTheme.titleMedium?.copyWith(
@@ -403,7 +407,8 @@ class _AccountScreenState extends State<AccountScreen> {
                   ),
                 ),
               ),
-            ],
+              ],
+            ),
           ),
         ),
       ),
