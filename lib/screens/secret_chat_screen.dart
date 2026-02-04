@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:flutter/material.dart';
 import '../sheets/wingman_sheet.dart';
 import '../theme/app_colors.dart';
@@ -41,6 +43,12 @@ class SecretChatScreen extends StatelessWidget {
                 ),
               ],
             );
+    final messages = chatData.messages;
+    final myCount = messages.where((message) => message.isMe).length;
+    final theirCount = messages.length - myCount;
+    final progress = min(myCount, theirCount) / 10;
+    final clampedProgress = progress.clamp(0.0, 1.0);
+    final statusText = clampedProgress >= 1.0 ? 'Klar' : 'Låst';
 
     return Scaffold(
       body: Stack(
@@ -48,41 +56,29 @@ class SecretChatScreen extends StatelessWidget {
           Column(
             children: [
               const SizedBox(height: kToolbarHeight + 8),
-              // Lock banner
               Padding(
-                padding: const EdgeInsets.fromLTRB(16, 12, 16, 8),
-                child: Container(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(14),
-                    border: Border.all(color: const Color(0xFFE6E0F2)),
-                  ),
-                  child: const Row(
-                    children: [
-                      Icon(Icons.lock_outline, size: 18, color: Colors.black54),
-                      SizedBox(width: 10),
-                      Expanded(
-                        child: Text(
-                          'Billeder låst – Lær hinanden at kende først',
-                          style:
-                              TextStyle(fontSize: 13, color: Colors.black54),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-
-              Padding(
-                padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: const [
+                padding: const EdgeInsets.fromLTRB(16, 12, 16, 12),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
                     Text(
-                      'Du: 6/10  ·  Dem: 7/10',
-                      style: TextStyle(fontSize: 12, color: Colors.black45),
+                      statusText,
+                      style: const TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w600,
+                        color: Colors.black45,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    ClipRRect(
+                      borderRadius: BorderRadius.circular(999),
+                      child: LinearProgressIndicator(
+                        value: clampedProgress,
+                        minHeight: 6,
+                        backgroundColor: const Color(0xFFEDE7FF),
+                        valueColor:
+                            const AlwaysStoppedAnimation(Color(0xFFED4DC1)),
+                      ),
                     ),
                   ],
                 ),
