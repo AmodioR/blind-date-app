@@ -40,7 +40,7 @@ class WingmanScreen extends StatelessWidget {
                 child: Container(
                   padding: const EdgeInsets.all(20),
                   decoration: BoxDecoration(
-                    color: AppColors.primary,
+                    color: AppColors.wingmanGoldSoft,
                     borderRadius: BorderRadius.circular(24),
                     border: Border.all(color: AppColors.border),
                     boxShadow: const [
