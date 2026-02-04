@@ -167,6 +167,15 @@ class MatchProfileScreen extends StatelessWidget {
                 onPressed: () => _showSafetySheet(context),
               ),
             ),
+            Positioned(
+              top: 8,
+              left: 12,
+              child: IconButton(
+                icon: const Icon(Icons.arrow_back),
+                color: const Color(0xFF2F2A3A),
+                onPressed: () => Navigator.pop(context),
+              ),
+            ),
           ],
         ),
       ),
