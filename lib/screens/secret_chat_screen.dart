@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../sheets/wingman_sheet.dart';
+import 'match_profile_screen.dart';
 
 class SecretChatScreen extends StatelessWidget {
   final String? chatId;
@@ -43,6 +44,20 @@ class SecretChatScreen extends StatelessWidget {
 
     return Scaffold(
       appBar: AppBar(
+        leading: IconButton(
+          icon: const Icon(Icons.account_circle_outlined),
+          onPressed: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (_) => MatchProfileScreen(
+                  name: chatData.name,
+                  age: chatData.age,
+                ),
+              ),
+            );
+          },
+        ),
         title: Text(chatData.name),
 
         centerTitle: true,
