@@ -100,6 +100,7 @@ class MatchProfileScreen extends StatelessWidget {
     const bool isProfileReadyToUnlock = false;
     return Scaffold(
       body: Stack(
+        fit: StackFit.expand,
         children: [
           Positioned.fill(
             child: Container(
@@ -175,31 +176,34 @@ class MatchProfileScreen extends StatelessWidget {
                         ),
                       ),
                       const SizedBox(height: 24),
-                      ElevatedButton(
-                        onPressed:
-                            isProfileReadyToUnlock ? () {} : null,
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: isProfileReadyToUnlock
-                              ? AppColors.primary
-                              : Colors.grey.withValues(alpha: 0.6),
-                          disabledBackgroundColor:
-                              Colors.grey.withValues(alpha: 0.6),
-                          disabledForegroundColor:
-                              Colors.white.withValues(alpha: 0.7),
-                          padding:
-                              const EdgeInsets.symmetric(vertical: 22),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(28),
+                      SizedBox(
+                        width: double.infinity,
+                        child: ElevatedButton(
+                          onPressed:
+                              isProfileReadyToUnlock ? () {} : null,
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: isProfileReadyToUnlock
+                                ? AppColors.primary
+                                : Colors.grey.withValues(alpha: 0.6),
+                            disabledBackgroundColor:
+                                Colors.grey.withValues(alpha: 0.6),
+                            disabledForegroundColor:
+                                Colors.white.withValues(alpha: 0.7),
+                            padding:
+                                const EdgeInsets.symmetric(vertical: 22),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(28),
+                            ),
+                            elevation: isProfileReadyToUnlock ? 8 : 0,
                           ),
-                          elevation: isProfileReadyToUnlock ? 8 : 0,
-                        ),
-                        child: Text(
-                          'Lås op',
-                          style: TextStyle(
-                            fontSize: 20,
-                            fontWeight: FontWeight.w700,
-                            color: Colors.white.withValues(
-                              alpha: isProfileReadyToUnlock ? 1 : 0.7,
+                          child: Text(
+                            'Lås op',
+                            style: TextStyle(
+                              fontSize: 20,
+                              fontWeight: FontWeight.w700,
+                              color: Colors.white.withValues(
+                                alpha: isProfileReadyToUnlock ? 1 : 0.7,
+                              ),
                             ),
                           ),
                         ),
