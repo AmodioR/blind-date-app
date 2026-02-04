@@ -103,12 +103,6 @@ class OpenChatsScreen extends StatelessWidget {
     ];
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Chats'),
-        centerTitle: true,
-        backgroundColor: const Color(0xFFF5F0FF),
-        elevation: 0,
-      ),
       body: Container(
         decoration: const BoxDecoration(
           gradient: AppColors.premiumGradient,
@@ -119,43 +113,56 @@ class OpenChatsScreen extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-              // Lille intro (calm, app-like)
-              Padding(
-                padding: const EdgeInsets.only(bottom: 10),
-                child: Text(
-                  'Dine blind dates',
-                  style: TextStyle(
-                    fontSize: 14,
-                    fontWeight: FontWeight.w700,
-                    color: Colors.black.withOpacity(0.75),
+                const Padding(
+                  padding: EdgeInsets.only(top: 12, bottom: 10),
+                  child: Center(
+                    child: Text(
+                      'Chats',
+                      style: TextStyle(
+                        fontSize: 26,
+                        fontWeight: FontWeight.w800,
+                        color: AppColors.textSoft,
+                      ),
+                    ),
                   ),
                 ),
-              ),
+                // Lille intro (calm, app-like)
+                Padding(
+                  padding: const EdgeInsets.only(bottom: 10),
+                  child: Text(
+                    'Dine blind dates',
+                    style: TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w700,
+                      color: Colors.black.withOpacity(0.75),
+                    ),
+                  ),
+                ),
 
-              Expanded(
-                child: chats.isEmpty
-                    ? const _EmptyChatsState()
-                    : ListView.separated(
-                        padding: const EdgeInsets.only(bottom: 16),
-                        itemCount: chats.length,
-                        separatorBuilder: (_, __) => const SizedBox(height: 10),
-                        itemBuilder: (context, i) {
-                          final chat = chats[i];
-                          return _ChatCard(
-                            chat: chat,
-                            onTap: () {
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (_) =>
-                                      SecretChatScreen(chatId: chat.id),
-                                ),
-                              );
-                            },
-                          );
-                        },
-                      ),
-              ),
+                Expanded(
+                  child: chats.isEmpty
+                      ? const _EmptyChatsState()
+                      : ListView.separated(
+                          padding: const EdgeInsets.only(bottom: 16),
+                          itemCount: chats.length,
+                          separatorBuilder: (_, __) => const SizedBox(height: 10),
+                          itemBuilder: (context, i) {
+                            final chat = chats[i];
+                            return _ChatCard(
+                              chat: chat,
+                              onTap: () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (_) =>
+                                        SecretChatScreen(chatId: chat.id),
+                                  ),
+                                );
+                              },
+                            );
+                          },
+                        ),
+                ),
               ],
             ),
           ),
@@ -347,12 +354,12 @@ class _TurnIndicator extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+      width: 8,
+      height: 8,
       decoration: BoxDecoration(
         color: const Color(0xFF6C4AB6),
-        borderRadius: BorderRadius.circular(999),
+        shape: BoxShape.circle,
       ),
-      child: const SizedBox(width: 6, height: 6),
     );
   }
 }
