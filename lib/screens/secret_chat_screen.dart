@@ -5,22 +5,34 @@ import '../sheets/wingman_sheet.dart';
 import '../theme/app_colors.dart';
 import 'match_profile_screen.dart';
 
-class SecretChatScreen extends StatelessWidget {
+class SecretChatScreen extends StatefulWidget {
   final String? chatId;
   final String? title;
   const SecretChatScreen({super.key, this.chatId, this.title});
 
   @override
-  Widget build(BuildContext context) {
-    final chatData = chatId == null
+  State<SecretChatScreen> createState() => _SecretChatScreenState();
+}
+
+class _SecretChatScreenState extends State<SecretChatScreen> {
+  late final String _chatName;
+  late final int _chatAge;
+  late final List<ChatMessage> _messages;
+  final TextEditingController _textController = TextEditingController();
+  final ScrollController _scrollController = ScrollController();
+
+  @override
+  void initState() {
+    super.initState();
+    final chatData = widget.chatId == null
         ? ChatData(
-            name: title ?? 'Nyt match',
+            name: widget.title ?? 'Nyt match',
             age: 23,
             messages: const [],
           )
-        : chatConversations[chatId] ??
+        : chatConversations[widget.chatId] ??
             ChatData(
-              name: title ?? 'Nyt match',
+              name: widget.title ?? 'Nyt match',
               age: 23,
               messages: const [
                 ChatMessage(
@@ -43,9 +55,43 @@ class SecretChatScreen extends StatelessWidget {
                 ),
               ],
             );
-    final messages = chatData.messages;
-    final myCount = messages.where((message) => message.isMe).length;
-    final theirCount = messages.length - myCount;
+    _chatName = chatData.name;
+    _chatAge = chatData.age;
+    _messages = List<ChatMessage>.from(chatData.messages);
+  }
+
+  @override
+  void dispose() {
+    _textController.dispose();
+    _scrollController.dispose();
+    super.dispose();
+  }
+
+  void _handleSend() {
+    final text = _textController.text.trim();
+    if (text.isEmpty) {
+      return;
+    }
+    setState(() {
+      _messages.add(ChatMessage(text: text, isMe: true));
+    });
+    _textController.clear();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!_scrollController.hasClients) {
+        return;
+      }
+      _scrollController.animateTo(
+        _scrollController.position.maxScrollExtent,
+        duration: const Duration(milliseconds: 200),
+        curve: Curves.easeOut,
+      );
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final myCount = _messages.where((message) => message.isMe).length;
+    final theirCount = _messages.length - myCount;
     final progress = min(myCount, theirCount) / 10;
     final clampedProgress = progress.clamp(0.0, 1.0);
     final statusText = clampedProgress >= 1.0 ? 'Klar' : 'Låst';
@@ -86,15 +132,17 @@ class SecretChatScreen extends StatelessWidget {
 
               // Chat list (dummy)
               Expanded(
-                child: ListView(
+                child: ListView.builder(
+                  controller: _scrollController,
                   padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
-                  children: [
-                    for (final message in chatData.messages)
-                      if (message.isMe)
-                        _MeBubble(text: message.text)
-                      else
-                        _OtherBubble(text: message.text),
-                  ],
+                  itemCount: _messages.length,
+                  itemBuilder: (context, index) {
+                    final message = _messages[index];
+                    if (message.isMe) {
+                      return _MeBubble(text: message.text);
+                    }
+                    return _OtherBubble(text: message.text);
+                  },
                 ),
               ),
 
@@ -112,10 +160,16 @@ class SecretChatScreen extends StatelessWidget {
                           borderRadius: BorderRadius.circular(16),
                           border: Border.all(color: const Color(0xFFE6E0F2)),
                         ),
-                        alignment: Alignment.centerLeft,
-                        child: const Text(
-                          'Skriv en besked…',
-                          style: TextStyle(color: Colors.black38),
+                        alignment: Alignment.center,
+                        child: TextField(
+                          controller: _textController,
+                          textInputAction: TextInputAction.send,
+                          onSubmitted: (_) => _handleSend(),
+                          decoration: const InputDecoration(
+                            hintText: 'Skriv en besked…',
+                            hintStyle: TextStyle(color: Colors.black38),
+                            border: InputBorder.none,
+                          ),
                         ),
                       ),
                     ),
@@ -164,7 +218,7 @@ class SecretChatScreen extends StatelessWidget {
                       ),
                     ),
                     Text(
-                      '${chatData.name}, ${chatData.age}',
+                      '$_chatName, $_chatAge',
                       style: const TextStyle(
                         fontSize: 26,
                         fontWeight: FontWeight.w800,
@@ -180,8 +234,8 @@ class SecretChatScreen extends StatelessWidget {
                             context,
                             MaterialPageRoute(
                               builder: (_) => MatchProfileScreen(
-                                name: chatData.name,
-                                age: chatData.age,
+                                name: _chatName,
+                                age: _chatAge,
                               ),
                             ),
                           );
