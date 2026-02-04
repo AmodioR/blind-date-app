@@ -14,6 +14,7 @@ class AccountScreen extends StatefulWidget {
 class _AccountScreenState extends State<AccountScreen> {
   static const _nameKey = 'enroll_name';
   static const _ageKey = 'enroll_age';
+  static const _locationKey = 'enroll_location';
   static const _genderPreferenceKey = 'enroll_gender_preference';
   static const _ageRangeMinKey = 'enroll_age_range_min';
   static const _ageRangeMaxKey = 'enroll_age_range_max';
@@ -94,19 +95,42 @@ class _AccountScreenState extends State<AccountScreen> {
         _distance != _initialDistance;
   }
 
-  void _saveChanges() {
+  Future<void> _saveChanges() async {
     if (!_hasChanges) {
       return;
     }
+    final prefs = await SharedPreferences.getInstance();
+    final name = _nameController.text.trim();
+    final age = int.tryParse(_ageController.text.trim());
+    if (name.isEmpty) {
+      await prefs.remove(_nameKey);
+    } else {
+      await prefs.setString(_nameKey, name);
+    }
+    if (age == null) {
+      await prefs.remove(_ageKey);
+    } else {
+      await prefs.setInt(_ageKey, age);
+    }
+    final existingLocation = prefs.getString(_locationKey);
+    if (existingLocation == null || existingLocation.isEmpty) {
+      await prefs.remove(_locationKey);
+    } else {
+      await prefs.setString(_locationKey, existingLocation);
+    }
+    await prefs.setString(_genderPreferenceKey, _selectedGender);
+    await prefs.setInt(_ageRangeMinKey, _ageRange.start.round());
+    await prefs.setInt(_ageRangeMaxKey, _ageRange.end.round());
+    await prefs.setInt(_distanceKmKey, _distance.round());
     setState(() {
-      _initialName = _nameController.text.trim();
-      _initialAge = _ageController.text.trim();
+      _initialName = name;
+      _initialAge = age?.toString() ?? '';
       _initialGender = _selectedGender;
       _initialAgeRange = _ageRange;
       _initialDistance = _distance;
     });
     ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Dine ændringer er gemt')),
+      const SnackBar(content: Text('Gemt')),
     );
   }
 
