@@ -36,54 +36,68 @@ class WingmanScreen extends StatelessWidget {
                 ],
               ),
               const SizedBox(height: 18),
-              Container(
-                padding: const EdgeInsets.all(20),
-                decoration: BoxDecoration(
-                  color: AppColors.wingmanGoldSoft,
-                  borderRadius: BorderRadius.circular(24),
-                  border: Border.all(color: AppColors.border),
-                  boxShadow: const [
-                    BoxShadow(
-                      color: Color(0x1A000000),
-                      blurRadius: 18,
-                      offset: Offset(0, 10),
-                    ),
-                    BoxShadow(
-                      color: Color(0x12000000),
-                      blurRadius: 40,
-                      offset: Offset(0, 20),
-                    ),
-                  ],
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: const [
-                    Text(
-                      'Få ro i maven med korte, sikre svar der føles som dig.',
-                      style: TextStyle(
-                        fontSize: 16,
-                        height: 1.5,
-                        color: Colors.black,
+              Expanded(
+                child: Container(
+                  padding: const EdgeInsets.all(20),
+                  decoration: BoxDecoration(
+                    color: AppColors.primary,
+                    borderRadius: BorderRadius.circular(24),
+                    border: Border.all(color: AppColors.border),
+                    boxShadow: const [
+                      BoxShadow(
+                        color: Color(0x1A000000),
+                        blurRadius: 18,
+                        offset: Offset(0, 10),
                       ),
-                    ),
-                    SizedBox(height: 18),
-                    Text(
-                      'Det hjælper jeg med:',
-                      style: TextStyle(
-                        fontSize: 14,
-                        fontWeight: FontWeight.w700,
-                        color: Colors.black,
+                      BoxShadow(
+                        color: Color(0x12000000),
+                        blurRadius: 40,
+                        offset: Offset(0, 20),
                       ),
-                    ),
-                    SizedBox(height: 12),
-                    _InfoBullet(text: 'Hvad kan jeg svare?'),
-                    SizedBox(height: 10),
-                    _InfoBullet(text: 'Hvad kan jeg spørge om?'),
-                    SizedBox(height: 10),
-                    _InfoBullet(text: 'Er det her for meget?'),
-                    SizedBox(height: 18),
-                    _ValueCueRow(),
-                  ],
+                    ],
+                  ),
+                  child: LayoutBuilder(
+                    builder: (context, constraints) {
+                      return SingleChildScrollView(
+                        physics: const ClampingScrollPhysics(),
+                        child: ConstrainedBox(
+                          constraints: BoxConstraints(
+                            minHeight: constraints.maxHeight,
+                          ),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: const [
+                              Text(
+                                'Få ro i maven med korte, sikre svar der føles som dig.',
+                                style: TextStyle(
+                                  fontSize: 16,
+                                  height: 1.5,
+                                  color: Colors.black,
+                                ),
+                              ),
+                              SizedBox(height: 18),
+                              Text(
+                                'Det hjælper jeg med:',
+                                style: TextStyle(
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.w700,
+                                  color: Colors.black,
+                                ),
+                              ),
+                              SizedBox(height: 12),
+                              _InfoBullet(text: 'Hvad kan jeg svare?'),
+                              SizedBox(height: 10),
+                              _InfoBullet(text: 'Hvad kan jeg spørge om?'),
+                              SizedBox(height: 10),
+                              _InfoBullet(text: 'Er det her for meget?'),
+                              SizedBox(height: 18),
+                              _ValueCueRow(),
+                            ],
+                          ),
+                        ),
+                      );
+                    },
+                  ),
                 ),
               ),
               const SizedBox(height: 20),
