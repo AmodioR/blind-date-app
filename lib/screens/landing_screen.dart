@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../theme/app_colors.dart';
+import 'enroll_screen.dart';
 import 'main_shell.dart';
 
 class LandingScreen extends StatelessWidget {
@@ -60,7 +61,11 @@ class LandingScreen extends StatelessWidget {
                 ),
                 const SizedBox(height: 14),
                 OutlinedButton(
-                  onPressed: () => _handleEntry(context),
+                  onPressed: () {
+                    Navigator.of(context).push(
+                      MaterialPageRoute(builder: (_) => const EnrollScreen()),
+                    );
+                  },
                   style: OutlinedButton.styleFrom(
                     padding: const EdgeInsets.symmetric(vertical: 18),
                     shape: RoundedRectangleBorder(
