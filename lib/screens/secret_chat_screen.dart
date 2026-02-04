@@ -10,31 +10,31 @@ class SecretChatScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final chatData = chatId == null
-        ? _ChatData(
+        ? ChatData(
             name: title ?? 'Nyt match',
             age: 23,
             messages: const [],
           )
-        : _chatConversations[chatId] ??
-            _ChatData(
+        : chatConversations[chatId] ??
+            ChatData(
               name: title ?? 'Nyt match',
               age: 23,
               messages: const [
-                _ChatMessage(
+                ChatMessage(
                   text:
                       'Hej 😄 Jeg synes virkelig konceptet her er fedt. Det føles meget mere ægte.',
                   isMe: false,
                 ),
-                _ChatMessage(
+                ChatMessage(
                   text:
                       'Tak! Jeg er helt enig. Det er meget rarere at lære hinanden at kende først 😊',
                   isMe: true,
                 ),
-                _ChatMessage(
+                ChatMessage(
                   text: 'Helt sikkert! Hvad laver du normalt i din fritid?',
                   isMe: false,
                 ),
-                _ChatMessage(
+                ChatMessage(
                   text: 'Jeg laver faktisk musik og gamer en del. Hvad med dig?',
                   isMe: true,
                 ),
@@ -170,96 +170,96 @@ class SecretChatScreen extends StatelessWidget {
   }
 }
 
-class _ChatData {
+class ChatData {
   final String name;
   final int age;
-  final List<_ChatMessage> messages;
+  final List<ChatMessage> messages;
 
-  const _ChatData({
+  const ChatData({
     required this.name,
     required this.age,
     required this.messages,
   });
 }
 
-class _ChatMessage {
+class ChatMessage {
   final String text;
   final bool isMe;
 
-  const _ChatMessage({
+  const ChatMessage({
     required this.text,
     required this.isMe,
   });
 }
 
-const Map<String, _ChatData> _chatConversations = {
-  'jonas-24': _ChatData(
+const Map<String, ChatData> chatConversations = {
+  'jonas-24': ChatData(
     name: 'Jonas',
     age: 24,
     messages: const [
-      _ChatMessage(
+      ChatMessage(
         text: 'Godmorgen! Har du fået din kaffe endnu?',
         isMe: false,
       ),
-      _ChatMessage(
+      ChatMessage(
         text: 'Ja! Og jeg prøver en ny bønne i dag ☕️',
         isMe: true,
       ),
-      _ChatMessage(
+      ChatMessage(
         text: 'Nice, jeg er mere te-person. Hvad er dit go-to humørboost?',
         isMe: false,
       ),
     ],
   ),
-  'magnus-22': _ChatData(
+  'magnus-22': ChatData(
     name: 'Magnus',
     age: 22,
     messages: const [
-      _ChatMessage(
+      ChatMessage(
         text: 'Hvilken type musik får dig altid i godt humør?',
         isMe: false,
       ),
-      _ChatMessage(
+      ChatMessage(
         text: 'Indie pop eller noget med god energi. Dig?',
         isMe: true,
       ),
-      _ChatMessage(
+      ChatMessage(
         text: 'Jeg er 90’er rock hele vejen. Skal vi lave en playliste?',
         isMe: false,
       ),
     ],
   ),
-  'oscar-25': _ChatData(
+  'oscar-25': ChatData(
     name: 'Oscar',
     age: 25,
     messages: const [
-      _ChatMessage(
+      ChatMessage(
         text: 'Jeg tror vi ville være gode til at rejse sammen.',
         isMe: false,
       ),
-      _ChatMessage(
+      ChatMessage(
         text: 'Helt enig! Hvad er dit næste drømmerejsemål?',
         isMe: true,
       ),
-      _ChatMessage(
+      ChatMessage(
         text: 'Japan. Street food + neon. Hvordan med dig?',
         isMe: false,
       ),
     ],
   ),
-  'sara-23': _ChatData(
+  'sara-23': ChatData(
     name: 'Sara',
     age: 23,
     messages: const [
-      _ChatMessage(
+      ChatMessage(
         text: 'Hej! Jeg kan se vi begge elsker brunch.',
         isMe: false,
       ),
-      _ChatMessage(
+      ChatMessage(
         text: 'Det er mit yndlingsmåltid. Har du et favoritsted?',
         isMe: true,
       ),
-      _ChatMessage(
+      ChatMessage(
         text: 'Jeg har en lille café jeg elsker. Vil du have navnet?',
         isMe: false,
       ),

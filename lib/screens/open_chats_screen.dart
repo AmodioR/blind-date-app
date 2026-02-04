@@ -7,41 +7,27 @@ class OpenChatsScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final chatMessages = <String, List<String>>{
-      'jonas-24': [
-        'Godmorgen! Har du fået din kaffe endnu?',
-        'Ja! Og jeg prøver en ny bønne i dag ☕️',
-        'Nice, jeg er mere te-person. Hvad er dit go-to humørboost?',
-      ],
-      'magnus-22': [
-        'Hvilken type musik får dig altid i godt humør?',
-        'Indie pop eller noget med god energi. Dig?',
-        'Jeg er 90’er rock hele vejen. Skal vi lave en playliste?',
-      ],
-      'oscar-25': [
-        'Jeg tror vi ville være gode til at rejse sammen.',
-        'Helt enig! Hvad er dit næste drømmerejsemål?',
-        'Japan. Street food + neon. Hvordan med dig?',
-      ],
-      'sara-23': [
-        'Hej! Jeg kan se vi begge elsker brunch.',
-        'Det er mit yndlingsmåltid. Har du et favoritsted?',
-        'Jeg har en lille café jeg elsker. Vil du have navnet?',
-      ],
-    };
-
     String? lastMessageFor(String chatId) {
-      final messages = chatMessages[chatId];
+      final messages = chatConversations[chatId]?.messages;
       if (messages == null || messages.isEmpty) {
         return null;
       }
 
       final lastNonEmpty = messages.lastWhere(
-        (message) => message.trim().isNotEmpty,
-        orElse: () => '',
+        (message) => message.text.trim().isNotEmpty,
+        orElse: () => const ChatMessage(text: '', isMe: false),
       );
 
-      return lastNonEmpty.isEmpty ? null : lastNonEmpty;
+      return lastNonEmpty.text.isEmpty ? null : lastNonEmpty.text;
+    }
+
+    _ChatLockState lockStateFor(String chatId) {
+      final messages = chatConversations[chatId]?.messages ?? [];
+      final myCount = messages.where((message) => message.isMe).length;
+      final theirCount = messages.length - myCount;
+      return (myCount >= 10 && theirCount >= 10)
+          ? _ChatLockState.ready
+          : _ChatLockState.locked;
     }
 
     // UI først: dummy chats
@@ -50,7 +36,7 @@ class OpenChatsScreen extends StatelessWidget {
         id: 'jonas-24',
         name: 'Jonas',
         age: 24,
-        lockState: _ChatLockState.locked,
+        lockState: lockStateFor('jonas-24'),
         lastMessage: lastMessageFor('jonas-24'),
         time: '12:41',
         progress: 0.35,
@@ -60,7 +46,7 @@ class OpenChatsScreen extends StatelessWidget {
         id: 'magnus-22',
         name: 'Magnus',
         age: 22,
-        lockState: _ChatLockState.ready,
+        lockState: lockStateFor('magnus-22'),
         lastMessage: lastMessageFor('magnus-22'),
         time: 'i går',
         progress: 0.92,
@@ -70,7 +56,7 @@ class OpenChatsScreen extends StatelessWidget {
         id: 'oscar-25',
         name: 'Oscar',
         age: 25,
-        lockState: _ChatLockState.locked,
+        lockState: lockStateFor('oscar-25'),
         lastMessage: lastMessageFor('oscar-25'),
         time: 'man.',
         progress: 0.55,
@@ -80,7 +66,7 @@ class OpenChatsScreen extends StatelessWidget {
         id: 'sara-23',
         name: 'Sara',
         age: 23,
-        lockState: _ChatLockState.locked,
+        lockState: lockStateFor('sara-23'),
         lastMessage: lastMessageFor('sara-23'),
         time: 'søn.',
         progress: 0.2,
