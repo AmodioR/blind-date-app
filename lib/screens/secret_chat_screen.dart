@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import '../sheets/wingman_sheet.dart';
+import '../theme/app_colors.dart';
 import 'match_profile_screen.dart';
 
 class SecretChatScreen extends StatelessWidget {
   final String? chatId;
   final String? title;
   const SecretChatScreen({super.key, this.chatId, this.title});
-
 
   @override
   Widget build(BuildContext context) {
@@ -72,20 +72,6 @@ class SecretChatScreen extends StatelessWidget {
                       ),
                     ],
                   ),
-                ),
-              ),
-
-              Padding(
-                padding: const EdgeInsets.fromLTRB(16, 0, 16, 6),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Text(
-                      '${chatData.name}, ${chatData.age}',
-                      style:
-                          const TextStyle(fontSize: 12, color: Colors.black45),
-                    ),
-                  ],
                 ),
               ),
 
@@ -168,29 +154,46 @@ class SecretChatScreen extends StatelessWidget {
           ),
           SafeArea(
             child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 8),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  IconButton(
-                    icon: const Icon(Icons.arrow_back),
-                    onPressed: () => Navigator.pop(context),
-                  ),
-                  IconButton(
-                    icon: const Icon(Icons.account_circle_outlined),
-                    onPressed: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (_) => MatchProfileScreen(
-                            name: chatData.name,
-                            age: chatData.age,
-                          ),
-                        ),
-                      );
-                    },
-                  ),
-                ],
+              padding: const EdgeInsets.fromLTRB(8, 8, 8, 0),
+              child: SizedBox(
+                height: kToolbarHeight,
+                child: Stack(
+                  alignment: Alignment.center,
+                  children: [
+                    Align(
+                      alignment: Alignment.centerLeft,
+                      child: IconButton(
+                        icon: const Icon(Icons.arrow_back),
+                        onPressed: () => Navigator.pop(context),
+                      ),
+                    ),
+                    Text(
+                      '${chatData.name}, ${chatData.age}',
+                      style: const TextStyle(
+                        fontSize: 26,
+                        fontWeight: FontWeight.w800,
+                        color: AppColors.textSoft,
+                      ),
+                    ),
+                    Align(
+                      alignment: Alignment.centerRight,
+                      child: IconButton(
+                        icon: const Icon(Icons.account_circle_outlined),
+                        onPressed: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) => MatchProfileScreen(
+                                name: chatData.name,
+                                age: chatData.age,
+                              ),
+                            ),
+                          );
+                        },
+                      ),
+                    ),
+                  ],
+                ),
               ),
             ),
           ),
