@@ -1,4 +1,7 @@
+import 'dart:ui';
+
 import 'package:flutter/material.dart';
+import '../theme/app_colors.dart';
 
 class MatchProfileScreen extends StatelessWidget {
   final String name;
@@ -95,91 +98,118 @@ class MatchProfileScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: SafeArea(
-        child: Stack(
-          children: [
-            SingleChildScrollView(
-              padding: const EdgeInsets.fromLTRB(20, 48, 20, 32),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: [
-                  const Text(
-                    'Profil',
-                    textAlign: TextAlign.center,
-                    style: TextStyle(
-                      fontSize: 24,
-                      fontWeight: FontWeight.w600,
-                      color: Color(0xFF2F2A3A),
+      body: Container(
+        decoration: const BoxDecoration(
+          gradient: AppColors.premiumGradient,
+        ),
+        child: SafeArea(
+          child: Stack(
+            children: [
+              SingleChildScrollView(
+                padding: const EdgeInsets.fromLTRB(20, 88, 20, 32),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    ClipRRect(
+                      borderRadius: BorderRadius.circular(28),
+                      child: Stack(
+                        children: [
+                          Container(
+                            height: 320,
+                            width: double.infinity,
+                            decoration: BoxDecoration(
+                              gradient: LinearGradient(
+                                begin: Alignment.topLeft,
+                                end: Alignment.bottomRight,
+                                colors: [
+                                  const Color(0xFFED4DC1)
+                                      .withValues(alpha: 0.2),
+                                  const Color(0xFF8E5BFF)
+                                      .withValues(alpha: 0.25),
+                                  const Color(0xFFF4A6DE)
+                                      .withValues(alpha: 0.3),
+                                ],
+                              ),
+                              borderRadius: BorderRadius.circular(28),
+                              border:
+                                  Border.all(color: const Color(0xFFD9D0F5)),
+                            ),
+                          ),
+                          Positioned.fill(
+                            child: BackdropFilter(
+                              filter:
+                                  ImageFilter.blur(sigmaX: 18, sigmaY: 18),
+                              child: Container(
+                                color: Colors.white.withValues(alpha: 0.12),
+                              ),
+                            ),
+                          ),
+                          Positioned.fill(
+                            child: Container(
+                              decoration: BoxDecoration(
+                                color: Colors.white.withValues(alpha: 0.2),
+                                borderRadius: BorderRadius.circular(28),
+                                border: Border.all(
+                                  color: Colors.white.withValues(alpha: 0.25),
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
-                  ),
-                  const SizedBox(height: 20),
-                  Text(
-                    '$name, $age',
-                    style: const TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.w500,
-                      color: Color(0xFF2F2A3A),
+                    const SizedBox(height: 18),
+                    Text(
+                      'Profilen er låst. Lås op ved at lære hinanden at kende.',
+                      textAlign: TextAlign.center,
+                      style: const TextStyle(
+                        fontSize: 14,
+                        color: Colors.black54,
+                        height: 1.4,
+                      ),
                     ),
-                  ),
-                  const SizedBox(height: 28),
-                  Container(
-                    width: double.infinity,
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 18,
-                      vertical: 16,
-                    ),
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(18),
-                      border: Border.all(color: const Color(0xFFE6E0F2)),
-                    ),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: const [
-                        Text(
-                          'Profilen er låst',
-                          style: TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.w600,
-                            color: Color(0xFF2F2A3A),
+                  ],
+                ),
+              ),
+              SafeArea(
+                child: Padding(
+                  padding: const EdgeInsets.fromLTRB(8, 8, 8, 0),
+                  child: SizedBox(
+                    height: kToolbarHeight,
+                    child: Stack(
+                      alignment: Alignment.center,
+                      children: [
+                        Align(
+                          alignment: Alignment.centerLeft,
+                          child: IconButton(
+                            icon: const Icon(Icons.arrow_back),
+                            onPressed: () => Navigator.pop(context),
                           ),
                         ),
-                        SizedBox(height: 8),
                         Text(
-                          'Lås op ved at lære hinanden at kende.',
-                          style: TextStyle(
-                            fontSize: 14,
-                            color: Colors.black54,
+                          '$name, $age',
+                          style: const TextStyle(
+                            fontSize: 26,
+                            fontWeight: FontWeight.w800,
+                            color: AppColors.textSoft,
+                          ),
+                        ),
+                        Align(
+                          alignment: Alignment.centerRight,
+                          child: IconButton(
+                            icon: const Icon(Icons.more_horiz),
+                            onPressed: () => _showSafetySheet(context),
                           ),
                         ),
                       ],
                     ),
                   ),
-                ],
+                ),
               ),
-            ),
-            Positioned(
-              top: 8,
-              right: 12,
-              child: IconButton(
-                icon: const Icon(Icons.more_horiz),
-                color: const Color(0xFF2F2A3A),
-                onPressed: () => _showSafetySheet(context),
-              ),
-            ),
-            Positioned(
-              top: 8,
-              left: 12,
-              child: IconButton(
-                icon: const Icon(Icons.arrow_back),
-                color: const Color(0xFF2F2A3A),
-                onPressed: () => Navigator.pop(context),
-              ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
-      backgroundColor: const Color(0xFFF5F0FF),
     );
   }
 }
