@@ -471,14 +471,14 @@ class _AccountScreenState extends State<AccountScreen> {
                                 },
                                 style: OutlinedButton.styleFrom(
                                   padding:
-                                      const EdgeInsets.symmetric(vertical: 18),
+                                      const EdgeInsets.symmetric(vertical: 22),
                                   side: const BorderSide(
                                     color: AppColors.border,
                                   ),
                                   foregroundColor: AppColors.textMuted,
                                   backgroundColor: AppColors.surface,
                                   shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(24),
+                                    borderRadius: BorderRadius.circular(28),
                                   ),
                                 ),
                                 child: const Text(
