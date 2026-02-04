@@ -43,140 +43,155 @@ class SecretChatScreen extends StatelessWidget {
             );
 
     return Scaffold(
-      appBar: AppBar(
-        leading: IconButton(
-          icon: const Icon(Icons.account_circle_outlined),
-          onPressed: () {
-            Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (_) => MatchProfileScreen(
-                  name: chatData.name,
-                  age: chatData.age,
+      body: Stack(
+        children: [
+          Column(
+            children: [
+              const SizedBox(height: kToolbarHeight + 8),
+              // Lock banner
+              Padding(
+                padding: const EdgeInsets.fromLTRB(16, 12, 16, 8),
+                child: Container(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(14),
+                    border: Border.all(color: const Color(0xFFE6E0F2)),
+                  ),
+                  child: const Row(
+                    children: [
+                      Icon(Icons.lock_outline, size: 18, color: Colors.black54),
+                      SizedBox(width: 10),
+                      Expanded(
+                        child: Text(
+                          'Billeder låst – Lær hinanden at kende først',
+                          style:
+                              TextStyle(fontSize: 13, color: Colors.black54),
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
               ),
-            );
-          },
-        ),
-        title: Text(chatData.name),
 
-        centerTitle: true,
-        backgroundColor: const Color(0xFFF5F0FF),
-        elevation: 0,
-      ),
-      body: Column(
-        children: [
-          // Lock banner
-          Padding(
-            padding: const EdgeInsets.fromLTRB(16, 12, 16, 8),
-            child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(14),
-                border: Border.all(color: const Color(0xFFE6E0F2)),
-              ),
-              child: const Row(
-                children: [
-                  Icon(Icons.lock_outline, size: 18, color: Colors.black54),
-                  SizedBox(width: 10),
-                  Expanded(
-                    child: Text(
-                      'Billeder låst – Lær hinanden at kende først',
-                      style: TextStyle(fontSize: 13, color: Colors.black54),
+              Padding(
+                padding: const EdgeInsets.fromLTRB(16, 0, 16, 6),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Text(
+                      '${chatData.name}, ${chatData.age}',
+                      style:
+                          const TextStyle(fontSize: 12, color: Colors.black45),
                     ),
+                  ],
+                ),
+              ),
+
+              Padding(
+                padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: const [
+                    Text(
+                      'Du: 6/10  ·  Dem: 7/10',
+                      style: TextStyle(fontSize: 12, color: Colors.black45),
+                    ),
+                  ],
+                ),
+              ),
+
+              // Chat list (dummy)
+              Expanded(
+                child: ListView(
+                  padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
+                  children: [
+                    for (final message in chatData.messages)
+                      if (message.isMe)
+                        _MeBubble(text: message.text)
+                      else
+                        _OtherBubble(text: message.text),
+                  ],
+                ),
+              ),
+
+              // Input bar + Wingman hand
+              Padding(
+                padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 14),
+                        height: 48,
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(16),
+                          border: Border.all(color: const Color(0xFFE6E0F2)),
+                        ),
+                        alignment: Alignment.centerLeft,
+                        child: const Text(
+                          'Skriv en besked…',
+                          style: TextStyle(color: Colors.black38),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 10),
+                    InkWell(
+                      borderRadius: BorderRadius.circular(14),
+                      onTap: () {
+                        showModalBottomSheet(
+                          context: context,
+                          shape: const RoundedRectangleBorder(
+                            borderRadius:
+                                BorderRadius.vertical(top: Radius.circular(24)),
+                          ),
+                          builder: (_) => const WingmanSheet(),
+                        );
+                      },
+                      child: Container(
+                        height: 48,
+                        width: 48,
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFEDE7FF),
+                          borderRadius: BorderRadius.circular(14),
+                        ),
+                        child: const Icon(Icons.waving_hand_outlined,
+                            color: Color(0xFF6C4AB6)),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          SafeArea(
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 8),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  IconButton(
+                    icon: const Icon(Icons.arrow_back),
+                    onPressed: () => Navigator.pop(context),
+                  ),
+                  IconButton(
+                    icon: const Icon(Icons.account_circle_outlined),
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => MatchProfileScreen(
+                            name: chatData.name,
+                            age: chatData.age,
+                          ),
+                        ),
+                      );
+                    },
                   ),
                 ],
               ),
-            ),
-          ),
-
-          Padding(
-            padding: const EdgeInsets.fromLTRB(16, 0, 16, 6),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Text(
-                  '${chatData.name}, ${chatData.age}',
-                  style: const TextStyle(fontSize: 12, color: Colors.black45),
-                ),
-              ],
-            ),
-          ),
-
-          Padding(
-            padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: const [
-                Text(
-                  'Du: 6/10  ·  Dem: 7/10',
-                  style: TextStyle(fontSize: 12, color: Colors.black45),
-                ),
-              ],
-            ),
-          ),
-
-          // Chat list (dummy)
-          Expanded(
-            child: ListView(
-              padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
-              children: [
-                for (final message in chatData.messages)
-                  if (message.isMe)
-                    _MeBubble(text: message.text)
-                  else
-                    _OtherBubble(text: message.text),
-              ],
-            ),
-          ),
-
-          // Input bar + Wingman hand
-          Padding(
-            padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
-            child: Row(
-              children: [
-                Expanded(
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 14),
-                    height: 48,
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(16),
-                      border: Border.all(color: const Color(0xFFE6E0F2)),
-                    ),
-                    alignment: Alignment.centerLeft,
-                    child: const Text(
-                      'Skriv en besked…',
-                      style: TextStyle(color: Colors.black38),
-                    ),
-                  ),
-                ),
-                const SizedBox(width: 10),
-                InkWell(
-                  borderRadius: BorderRadius.circular(14),
-                  onTap: () {
-                    showModalBottomSheet(
-                      context: context,
-                      shape: const RoundedRectangleBorder(
-                        borderRadius:
-                            BorderRadius.vertical(top: Radius.circular(24)),
-                      ),
-                      builder: (_) => const WingmanSheet(),
-                    );
-                  },
-                  child: Container(
-                    height: 48,
-                    width: 48,
-                    decoration: BoxDecoration(
-                      color: const Color(0xFFEDE7FF),
-                      borderRadius: BorderRadius.circular(14),
-                    ),
-                    child: const Icon(Icons.waving_hand_outlined,
-                        color: Color(0xFF6C4AB6)),
-                  ),
-                ),
-              ],
             ),
           ),
         ],
