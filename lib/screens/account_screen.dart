@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import '../theme/app_colors.dart';
+import 'landing_screen.dart';
 
 class AccountScreen extends StatefulWidget {
   const AccountScreen({super.key});
@@ -408,27 +409,64 @@ class _AccountScreenState extends State<AccountScreen> {
                         const Spacer(),
                         Padding(
                           padding: EdgeInsets.only(bottom: bottomPadding),
-                          child: ElevatedButton(
-                            onPressed: _hasChanges ? _saveChanges : null,
-                            style: ElevatedButton.styleFrom(
-                              padding: const EdgeInsets.symmetric(vertical: 22),
-                              backgroundColor: AppColors.primary,
-                              disabledBackgroundColor: AppColors.border,
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(28),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.stretch,
+                            children: [
+                              OutlinedButton(
+                                onPressed: () {
+                                  Navigator.pushAndRemoveUntil(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (_) => const LandingScreen(),
+                                    ),
+                                    (route) => false,
+                                  );
+                                },
+                                style: OutlinedButton.styleFrom(
+                                  padding:
+                                      const EdgeInsets.symmetric(vertical: 18),
+                                  side: const BorderSide(
+                                    color: AppColors.border,
+                                  ),
+                                  foregroundColor: AppColors.textMuted,
+                                  backgroundColor: AppColors.surface,
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(24),
+                                  ),
+                                ),
+                                child: const Text(
+                                  'Log ud',
+                                  style: TextStyle(
+                                    fontWeight: FontWeight.w600,
+                                    fontSize: 16,
+                                  ),
+                                ),
                               ),
-                              elevation: 8,
-                            ),
-                            child: Text(
-                              'Gem',
-                              style: TextStyle(
-                                color: _hasChanges
-                                    ? Colors.white
-                                    : AppColors.textMuted,
-                                fontWeight: FontWeight.w700,
-                                fontSize: 20,
+                              const SizedBox(height: 14),
+                              ElevatedButton(
+                                onPressed: _hasChanges ? _saveChanges : null,
+                                style: ElevatedButton.styleFrom(
+                                  padding:
+                                      const EdgeInsets.symmetric(vertical: 22),
+                                  backgroundColor: AppColors.primary,
+                                  disabledBackgroundColor: AppColors.border,
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(28),
+                                  ),
+                                  elevation: 8,
+                                ),
+                                child: Text(
+                                  'Gem',
+                                  style: TextStyle(
+                                    color: _hasChanges
+                                        ? Colors.white
+                                        : AppColors.textMuted,
+                                    fontWeight: FontWeight.w700,
+                                    fontSize: 20,
+                                  ),
+                                ),
                               ),
-                            ),
+                            ],
                           ),
                         ),
                       ],
