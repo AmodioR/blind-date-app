@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import '../data/profile/local_profile_repository.dart';
 import '../data/profile/profile_model.dart';
+import '../data/profile/profile_repository_factory.dart';
 import '../theme/app_colors.dart';
 import 'main_tab_screen.dart';
 
@@ -13,7 +13,7 @@ class EnrollScreen extends StatefulWidget {
 }
 
 class _EnrollScreenState extends State<EnrollScreen> {
-  final LocalProfileRepository _profileRepository = LocalProfileRepository();
+  final _profileRepository = ProfileRepositoryFactory.create();
 
   int _currentStep = 1;
   final TextEditingController _nameController = TextEditingController();
