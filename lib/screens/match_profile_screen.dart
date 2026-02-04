@@ -1,17 +1,21 @@
 import 'dart:ui';
-import 'dart:math';
-
 import 'package:flutter/material.dart';
 import '../theme/app_colors.dart';
 
 class MatchProfileScreen extends StatelessWidget {
   final String name;
   final int age;
+  final double unlockProgress;
+  final int? myCount;
+  final int? theirCount;
 
   const MatchProfileScreen({
     super.key,
     required this.name,
     required this.age,
+    required this.unlockProgress,
+    this.myCount,
+    this.theirCount,
   });
 
   void _showSafetySheet(BuildContext context) {
@@ -98,12 +102,9 @@ class MatchProfileScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final int myCount = 0;
-    final int theirCount = 0;
-    final double unlockProgress = (min(myCount, theirCount) / 10)
-        .clamp(0.0, 1.0)
-        .toDouble();
-    final bool isProfileReadyToUnlock = unlockProgress >= 1;
+    final double clampedUnlockProgress =
+        unlockProgress.clamp(0.0, 1.0).toDouble();
+    final bool isProfileReadyToUnlock = clampedUnlockProgress >= 1;
     return Scaffold(
       body: Stack(
         fit: StackFit.expand,
@@ -185,7 +186,7 @@ class MatchProfileScreen extends StatelessWidget {
                       ClipRRect(
                         borderRadius: BorderRadius.circular(999),
                         child: LinearProgressIndicator(
-                          value: unlockProgress,
+                          value: clampedUnlockProgress,
                           minHeight: 4,
                           backgroundColor:
                               Colors.black.withValues(alpha: 0.08),
