@@ -97,8 +97,8 @@ body: Container(
                                   begin: Alignment.topLeft,
                                   end: Alignment.bottomRight,
                                   colors: [
-                                    Color(0xFF6C4AB6),
-                                    Color(0xFFBDA6FF),
+                                    Color(0xFFED4DC1),
+                                    Color(0xFFF4A6DE),
                                   ],
                                 ),
                                 borderRadius: BorderRadius.circular(28),
