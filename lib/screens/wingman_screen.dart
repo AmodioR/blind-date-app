@@ -63,7 +63,7 @@ class WingmanScreen extends StatelessWidget {
                       style: TextStyle(
                         fontSize: 16,
                         height: 1.5,
-                        color: AppColors.textMuted,
+                        color: Colors.black,
                       ),
                     ),
                     SizedBox(height: 18),
@@ -72,7 +72,7 @@ class WingmanScreen extends StatelessWidget {
                       style: TextStyle(
                         fontSize: 14,
                         fontWeight: FontWeight.w700,
-                        color: AppColors.textSoft,
+                        color: Colors.black,
                       ),
                     ),
                     SizedBox(height: 12),
@@ -140,7 +140,7 @@ class _InfoBullet extends StatelessWidget {
             style: const TextStyle(
               fontSize: 16,
               height: 1.4,
-              color: AppColors.textSoft,
+              color: Colors.black,
             ),
           ),
         ),
@@ -184,7 +184,7 @@ class _ValueChip extends StatelessWidget {
         style: const TextStyle(
           fontSize: 12,
           fontWeight: FontWeight.w600,
-          color: AppColors.textMuted,
+          color: Colors.black,
         ),
       ),
     );
