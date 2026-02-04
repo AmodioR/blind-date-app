@@ -1,22 +1,14 @@
 import 'package:flutter/material.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import 'screens/landing_screen.dart';
-import 'screens/main_shell.dart';
 import 'theme/app_colors.dart';
-
-
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  final prefs = await SharedPreferences.getInstance();
-  final isLoggedIn = prefs.getBool('isLoggedIn') ?? false;
-  runApp(BlindDateApp(isLoggedIn: isLoggedIn));
+  runApp(const BlindDateApp());
 }
 
 class BlindDateApp extends StatelessWidget {
-  const BlindDateApp({super.key, required this.isLoggedIn});
-
-  final bool isLoggedIn;
+  const BlindDateApp({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -32,7 +24,7 @@ class BlindDateApp extends StatelessWidget {
   ),
 ),
 
-      home: isLoggedIn ? const MainShell() : const LandingScreen(),
+      home: const LandingScreen(),
     );
   }
 }
