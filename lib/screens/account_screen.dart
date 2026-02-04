@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
+import '../config/supabase_config.dart';
 import '../data/profile/profile_model.dart';
 import '../data/profile/profile_repository_factory.dart';
 import '../theme/app_colors.dart';
@@ -115,6 +117,40 @@ class _AccountScreenState extends State<AccountScreen> {
     });
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(content: Text('Gemt')),
+    );
+  }
+
+  Future<void> _handleLogout() async {
+    bool signOutFailed = false;
+    if (SupabaseConfig.isConfigured) {
+      final session = Supabase.instance.client.auth.currentSession;
+      if (session != null) {
+        try {
+          await Supabase.instance.client.auth.signOut();
+        } catch (_) {
+          signOutFailed = true;
+        }
+      }
+    }
+
+    await _profileRepository.clearProfile();
+
+    if (!mounted) {
+      return;
+    }
+
+    if (signOutFailed) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Kunne ikke logge ud')),
+      );
+    }
+
+    Navigator.pushAndRemoveUntil(
+      context,
+      MaterialPageRoute(
+        builder: (_) => const LandingScreen(),
+      ),
+      (route) => false,
     );
   }
 
@@ -468,16 +504,7 @@ class _AccountScreenState extends State<AccountScreen> {
                             crossAxisAlignment: CrossAxisAlignment.stretch,
                             children: [
                               OutlinedButton(
-                                onPressed: () async {
-                                  await _profileRepository.clearProfile();
-                                  Navigator.pushAndRemoveUntil(
-                                    context,
-                                    MaterialPageRoute(
-                                      builder: (_) => const LandingScreen(),
-                                    ),
-                                    (route) => false,
-                                  );
-                                },
+                                onPressed: _handleLogout,
                                 style: OutlinedButton.styleFrom(
                                   padding:
                                       const EdgeInsets.symmetric(vertical: 22),
