@@ -2,16 +2,42 @@ import 'package:flutter/material.dart';
 import '../sheets/wingman_sheet.dart';
 
 class SecretChatScreen extends StatelessWidget {
-  final String title;
-  const SecretChatScreen({super.key, required this.title});
+  final String? chatId;
+  final String? title;
+  const SecretChatScreen({super.key, this.chatId, this.title});
 
 
   @override
   Widget build(BuildContext context) {
-    
+    final chatData = _chatConversations[chatId] ??
+        _ChatData(
+          name: title ?? 'Nyt match',
+          age: 23,
+          messages: const [
+            _ChatMessage(
+              text:
+                  'Hej 😄 Jeg synes virkelig konceptet her er fedt. Det føles meget mere ægte.',
+              isMe: false,
+            ),
+            _ChatMessage(
+              text:
+                  'Tak! Jeg er helt enig. Det er meget rarere at lære hinanden at kende først 😊',
+              isMe: true,
+            ),
+            _ChatMessage(
+              text: 'Helt sikkert! Hvad laver du normalt i din fritid?',
+              isMe: false,
+            ),
+            _ChatMessage(
+              text: 'Jeg laver faktisk musik og gamer en del. Hvad med dig?',
+              isMe: true,
+            ),
+          ],
+        );
+
     return Scaffold(
       appBar: AppBar(
-        title: Text(title),
+        title: Text(chatData.name),
 
         centerTitle: true,
         backgroundColor: const Color(0xFFF5F0FF),
@@ -45,6 +71,19 @@ class SecretChatScreen extends StatelessWidget {
           ),
 
           Padding(
+            padding: const EdgeInsets.fromLTRB(16, 0, 16, 6),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Text(
+                  '${chatData.name}, ${chatData.age}',
+                  style: const TextStyle(fontSize: 12, color: Colors.black45),
+                ),
+              ],
+            ),
+          ),
+
+          Padding(
             padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.center,
@@ -61,21 +100,12 @@ class SecretChatScreen extends StatelessWidget {
           Expanded(
             child: ListView(
               padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
-              children: const [
-                _OtherBubble(
-                  text:
-                      'Hej 😄 Jeg synes virkelig konceptet her er fedt. Det føles meget mere ægte.',
-                ),
-                _MeBubble(
-                  text:
-                      'Tak! Jeg er helt enig. Det er meget rarere at lære hinanden at kende først 😊',
-                ),
-                _OtherBubble(
-                  text: 'Helt sikkert! Hvad laver du normalt i din fritid?',
-                ),
-                _MeBubble(
-                  text: 'Jeg laver faktisk musik og gamer en del. Hvad med dig?',
-                ),
+              children: [
+                for (final message in chatData.messages)
+                  if (message.isMe)
+                    _MeBubble(text: message.text)
+                  else
+                    _OtherBubble(text: message.text),
               ],
             ),
           ),
@@ -133,6 +163,103 @@ class SecretChatScreen extends StatelessWidget {
     );
   }
 }
+
+class _ChatData {
+  final String name;
+  final int age;
+  final List<_ChatMessage> messages;
+
+  const _ChatData({
+    required this.name,
+    required this.age,
+    required this.messages,
+  });
+}
+
+class _ChatMessage {
+  final String text;
+  final bool isMe;
+
+  const _ChatMessage({
+    required this.text,
+    required this.isMe,
+  });
+}
+
+const Map<String, _ChatData> _chatConversations = {
+  'jonas-24': _ChatData(
+    name: 'Jonas',
+    age: 24,
+    messages: const [
+      _ChatMessage(
+        text: 'Godmorgen! Har du fået din kaffe endnu?',
+        isMe: false,
+      ),
+      _ChatMessage(
+        text: 'Ja! Og jeg prøver en ny bønne i dag ☕️',
+        isMe: true,
+      ),
+      _ChatMessage(
+        text: 'Nice, jeg er mere te-person. Hvad er dit go-to humørboost?',
+        isMe: false,
+      ),
+    ],
+  ),
+  'magnus-22': _ChatData(
+    name: 'Magnus',
+    age: 22,
+    messages: const [
+      _ChatMessage(
+        text: 'Hvilken type musik får dig altid i godt humør?',
+        isMe: false,
+      ),
+      _ChatMessage(
+        text: 'Indie pop eller noget med god energi. Dig?',
+        isMe: true,
+      ),
+      _ChatMessage(
+        text: 'Jeg er 90’er rock hele vejen. Skal vi lave en playliste?',
+        isMe: false,
+      ),
+    ],
+  ),
+  'oscar-25': _ChatData(
+    name: 'Oscar',
+    age: 25,
+    messages: const [
+      _ChatMessage(
+        text: 'Jeg tror vi ville være gode til at rejse sammen.',
+        isMe: false,
+      ),
+      _ChatMessage(
+        text: 'Helt enig! Hvad er dit næste drømmerejsemål?',
+        isMe: true,
+      ),
+      _ChatMessage(
+        text: 'Japan. Street food + neon. Hvordan med dig?',
+        isMe: false,
+      ),
+    ],
+  ),
+  'sara-23': _ChatData(
+    name: 'Sara',
+    age: 23,
+    messages: const [
+      _ChatMessage(
+        text: 'Hej! Jeg kan se vi begge elsker brunch.',
+        isMe: false,
+      ),
+      _ChatMessage(
+        text: 'Det er mit yndlingsmåltid. Har du et favoritsted?',
+        isMe: true,
+      ),
+      _ChatMessage(
+        text: 'Jeg har en lille café jeg elsker. Vil du have navnet?',
+        isMe: false,
+      ),
+    ],
+  ),
+};
 
 class _MeBubble extends StatelessWidget {
   final String text;

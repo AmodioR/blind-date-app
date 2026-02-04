@@ -10,27 +10,43 @@ class OpenChatsScreen extends StatelessWidget {
     // UI først: dummy chats
     final chats = <_ChatPreview>[
       _ChatPreview(
-        title: 'Jonas, 24',
+        id: 'jonas-24',
+        name: 'Jonas',
+        age: 24,
+        lockState: _ChatLockState.locked,
         lastMessage: 'Haha okay, det giver faktisk mening 😄',
         time: '12:41',
         progress: 0.35,
-        status: _ChatStatus.locked,
         unread: 0,
       ),
       _ChatPreview(
-        title: 'Magnus, 22',
+        id: 'magnus-22',
+        name: 'Magnus',
+        age: 22,
+        lockState: _ChatLockState.ready,
         lastMessage: 'Hvilken type musik får dig altid i godt humør?',
         time: 'i går',
         progress: 0.92,
-        status: _ChatStatus.ready,
         unread: 2,
       ),
       _ChatPreview(
-        title: 'Oscar, 25',
+        id: 'oscar-25',
+        name: 'Oscar',
+        age: 25,
+        lockState: _ChatLockState.locked,
         lastMessage: 'Jeg tror vi ville være gode til at rejse sammen.',
         time: 'man.',
         progress: 0.55,
-        status: _ChatStatus.locked,
+        unread: 0,
+      ),
+      _ChatPreview(
+        id: 'sara-23',
+        name: 'Sara',
+        age: 23,
+        lockState: _ChatLockState.locked,
+        lastMessage: null,
+        time: 'søn.',
+        progress: 0.2,
         unread: 0,
       ),
     ];
@@ -77,15 +93,14 @@ class OpenChatsScreen extends StatelessWidget {
                           return _ChatCard(
                             chat: chat,
                             onTap: () {
-  Navigator.push(
-  context,
-  MaterialPageRoute(
-    builder: (_) => SecretChatScreen(title: chat.title),
-  ),
-);
-
-},
-
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (_) =>
+                                      SecretChatScreen(chatId: chat.id),
+                                ),
+                              );
+                            },
                           );
                         },
                       ),
@@ -149,7 +164,7 @@ class _ChatCard extends StatelessWidget {
                         children: [
                           Expanded(
                             child: Text(
-                              chat.title,
+                              '${chat.name}, ${chat.age}',
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
                               style: const TextStyle(
@@ -171,7 +186,7 @@ class _ChatCard extends StatelessWidget {
                       ),
                       const SizedBox(height: 6),
                       Text(
-                        chat.lastMessage,
+                        chat.lastMessage ?? 'Start samtalen…',
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                         style: const TextStyle(
@@ -189,7 +204,7 @@ class _ChatCard extends StatelessWidget {
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.end,
                   children: [
-                    _StatusChip(status: chat.status),
+                    _StatusChip(status: chat.lockState),
                     if (chat.unread > 0) ...[
                       const SizedBox(height: 8),
                       _UnreadBadge(count: chat.unread),
@@ -245,12 +260,12 @@ class _Avatar extends StatelessWidget {
 }
 
 class _StatusChip extends StatelessWidget {
-  final _ChatStatus status;
+  final _ChatLockState status;
   const _StatusChip({required this.status});
 
   @override
   Widget build(BuildContext context) {
-    final isReady = status == _ChatStatus.ready;
+    final isReady = status == _ChatLockState.ready;
 
     final bg = isReady ? const Color(0xFFE8FFF0) : const Color(0xFFF5F0FF);
     final fg = isReady ? const Color(0xFF16794C) : const Color(0xFF6C4AB6);
@@ -326,24 +341,28 @@ class _EmptyChatsState extends StatelessWidget {
 // Model (UI dummy)
 // -------------------------
 
-enum _ChatStatus { locked, ready }
+enum _ChatLockState { locked, ready }
 
 class _ChatPreview {
-  final String title;
-  final String lastMessage;
+  final String id;
+  final String name;
+  final int age;
+  final _ChatLockState lockState;
+  final String? lastMessage;
   final String time;
   final double progress;
-  final _ChatStatus status;
   final int unread;
 
   _ChatPreview({
-    required this.title,
+    required this.id,
+    required this.name,
+    required this.age,
+    required this.lockState,
     required this.lastMessage,
     required this.time,
     required this.progress,
-    required this.status,
     required this.unread,
   });
 
-  double get uiProgress => status == _ChatStatus.ready ? 1.0 : progress;
+  double get uiProgress => lockState == _ChatLockState.ready ? 1.0 : progress;
 }
