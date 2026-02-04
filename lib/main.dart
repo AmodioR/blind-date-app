@@ -1,17 +1,24 @@
 import 'package:flutter/material.dart';
-import 'screens/home_screen.dart';
-import 'screens/open_chats_screen.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'screens/account_screen.dart';
+import 'screens/home_screen.dart';
+import 'screens/landing_screen.dart';
+import 'screens/open_chats_screen.dart';
 import 'theme/app_colors.dart';
 
 
 
-void main() {
-  runApp(const BlindDateApp());
+Future<void> main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  final prefs = await SharedPreferences.getInstance();
+  final isLoggedIn = prefs.getBool('isLoggedIn') ?? false;
+  runApp(BlindDateApp(isLoggedIn: isLoggedIn));
 }
 
 class BlindDateApp extends StatelessWidget {
-  const BlindDateApp({super.key});
+  const BlindDateApp({super.key, required this.isLoggedIn});
+
+  final bool isLoggedIn;
 
   @override
   Widget build(BuildContext context) {
@@ -27,7 +34,7 @@ class BlindDateApp extends StatelessWidget {
   ),
 ),
 
-      home: const MainShell(),
+      home: isLoggedIn ? const MainShell() : const LandingScreen(),
     );
   }
 }
@@ -79,4 +86,3 @@ class _MainShellState extends State<MainShell> {
     );
   }
 }
-
