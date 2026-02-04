@@ -23,6 +23,24 @@ class OpenChatsScreen extends StatelessWidget {
       return lastNonEmpty.text.isEmpty ? null : lastNonEmpty.text;
     }
 
+    bool isUsersTurnFor(String chatId) {
+      final messages = chatConversations[chatId]?.messages;
+      if (messages == null || messages.isEmpty) {
+        return false;
+      }
+
+      final lastNonEmpty = messages.lastWhere(
+        (message) => message.text.trim().isNotEmpty,
+        orElse: () => const ChatMessage(text: '', isMe: false),
+      );
+
+      if (lastNonEmpty.text.isEmpty) {
+        return false;
+      }
+
+      return !lastNonEmpty.isMe;
+    }
+
     _ChatLockState lockStateFor(String chatId) {
       final messages = chatConversations[chatId]?.messages ?? [];
       final myCount = messages.where((message) => message.isMe).length;
@@ -50,7 +68,7 @@ class OpenChatsScreen extends StatelessWidget {
         lastMessage: lastMessageFor('jonas-24'),
         time: '12:41',
         progress: progressFor('jonas-24'),
-        unread: 0,
+        isUsersTurn: isUsersTurnFor('jonas-24'),
       ),
       _ChatPreview(
         id: 'magnus-22',
@@ -60,7 +78,7 @@ class OpenChatsScreen extends StatelessWidget {
         lastMessage: lastMessageFor('magnus-22'),
         time: 'i går',
         progress: progressFor('magnus-22'),
-        unread: 2,
+        isUsersTurn: isUsersTurnFor('magnus-22'),
       ),
       _ChatPreview(
         id: 'oscar-25',
@@ -70,7 +88,7 @@ class OpenChatsScreen extends StatelessWidget {
         lastMessage: lastMessageFor('oscar-25'),
         time: 'man.',
         progress: progressFor('oscar-25'),
-        unread: 0,
+        isUsersTurn: isUsersTurnFor('oscar-25'),
       ),
       _ChatPreview(
         id: 'sara-23',
@@ -80,7 +98,7 @@ class OpenChatsScreen extends StatelessWidget {
         lastMessage: lastMessageFor('sara-23'),
         time: 'søn.',
         progress: progressFor('sara-23'),
-        unread: 0,
+        isUsersTurn: isUsersTurnFor('sara-23'),
       ),
     ];
 
@@ -238,9 +256,9 @@ class _ChatCard extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.end,
                   children: [
                     _StatusChip(status: chat.lockState),
-                    if (chat.unread > 0) ...[
+                    if (chat.isUsersTurn) ...[
                       const SizedBox(height: 8),
-                      _UnreadBadge(count: chat.unread),
+                      const _TurnIndicator(),
                     ],
                   ],
                 ),
@@ -323,9 +341,8 @@ class _StatusChip extends StatelessWidget {
   }
 }
 
-class _UnreadBadge extends StatelessWidget {
-  final int count;
-  const _UnreadBadge({required this.count});
+class _TurnIndicator extends StatelessWidget {
+  const _TurnIndicator();
 
   @override
   Widget build(BuildContext context) {
@@ -335,14 +352,7 @@ class _UnreadBadge extends StatelessWidget {
         color: const Color(0xFF6C4AB6),
         borderRadius: BorderRadius.circular(999),
       ),
-      child: Text(
-        '$count',
-        style: const TextStyle(
-          color: Colors.white,
-          fontSize: 12,
-          fontWeight: FontWeight.w800,
-        ),
-      ),
+      child: const SizedBox(width: 6, height: 6),
     );
   }
 }
@@ -384,7 +394,7 @@ class _ChatPreview {
   final String? lastMessage;
   final String time;
   final double progress;
-  final int unread;
+  final bool isUsersTurn;
 
   _ChatPreview({
     required this.id,
@@ -394,7 +404,7 @@ class _ChatPreview {
     required this.lastMessage,
     required this.time,
     required this.progress,
-    required this.unread,
+    required this.isUsersTurn,
   });
 
   double get uiProgress => lockState == _ChatLockState.ready ? 1.0 : progress;
