@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+import '../data/profile/local_profile_repository.dart';
+import '../data/profile/profile_model.dart';
 import '../theme/app_colors.dart';
 import 'landing_screen.dart';
 
@@ -12,13 +13,7 @@ class AccountScreen extends StatefulWidget {
 }
 
 class _AccountScreenState extends State<AccountScreen> {
-  static const _nameKey = 'enroll_name';
-  static const _ageKey = 'enroll_age';
-  static const _locationKey = 'enroll_location';
-  static const _genderPreferenceKey = 'enroll_gender_preference';
-  static const _ageRangeMinKey = 'enroll_age_range_min';
-  static const _ageRangeMaxKey = 'enroll_age_range_max';
-  static const _distanceKmKey = 'enroll_distance_km';
+  final LocalProfileRepository _profileRepository = LocalProfileRepository();
 
   final TextEditingController _nameController = TextEditingController();
   final TextEditingController _ageController = TextEditingController();
@@ -29,6 +24,7 @@ class _AccountScreenState extends State<AccountScreen> {
 
   String _initialName = 'Sofia';
   String _initialAge = '28';
+  String _initialLocation = '';
   String _initialGender = 'Alle';
   RangeValues _initialAgeRange = const RangeValues(24, 36);
   double _initialDistance = 25;
@@ -42,40 +38,38 @@ class _AccountScreenState extends State<AccountScreen> {
   }
 
   Future<void> _loadProfile() async {
-    final prefs = await SharedPreferences.getInstance();
-    final name = prefs.getString(_nameKey);
-    final age = prefs.getInt(_ageKey);
-    final genderPreference = prefs.getString(_genderPreferenceKey);
-    final ageRangeMin = prefs.getInt(_ageRangeMinKey);
-    final ageRangeMax = prefs.getInt(_ageRangeMaxKey);
-    final distance = prefs.getInt(_distanceKmKey);
+    final profile = await _profileRepository.loadProfile();
 
     if (!mounted) {
       return;
     }
 
     setState(() {
-      if (name != null && name.isNotEmpty) {
-        _initialName = name;
-        _nameController.text = name;
+      if (profile == null) {
+        return;
       }
-      if (age != null) {
-        _initialAge = age.toString();
+      if (profile.name.isNotEmpty) {
+        _initialName = profile.name;
+        _nameController.text = profile.name;
+      }
+      if (profile.age > 0) {
+        _initialAge = profile.age.toString();
         _ageController.text = _initialAge;
       }
-      if (genderPreference != null && genderPreference.isNotEmpty) {
-        _initialGender = genderPreference;
-        _selectedGender = genderPreference;
+      if (profile.location.isNotEmpty) {
+        _initialLocation = profile.location;
       }
-      if (ageRangeMin != null && ageRangeMax != null) {
-        _initialAgeRange =
-            RangeValues(ageRangeMin.toDouble(), ageRangeMax.toDouble());
-        _ageRange = _initialAgeRange;
+      if (profile.genderPreference.isNotEmpty) {
+        _initialGender = profile.genderPreference;
+        _selectedGender = profile.genderPreference;
       }
-      if (distance != null) {
-        _initialDistance = distance.toDouble();
-        _distance = _initialDistance;
-      }
+      _initialAgeRange = RangeValues(
+        profile.ageRangeMin.toDouble(),
+        profile.ageRangeMax.toDouble(),
+      );
+      _ageRange = _initialAgeRange;
+      _initialDistance = profile.distanceKm.toDouble();
+      _distance = _initialDistance;
     });
   }
 
@@ -99,32 +93,22 @@ class _AccountScreenState extends State<AccountScreen> {
     if (!_hasChanges) {
       return;
     }
-    final prefs = await SharedPreferences.getInstance();
     final name = _nameController.text.trim();
-    final age = int.tryParse(_ageController.text.trim());
-    if (name.isEmpty) {
-      await prefs.remove(_nameKey);
-    } else {
-      await prefs.setString(_nameKey, name);
-    }
-    if (age == null) {
-      await prefs.remove(_ageKey);
-    } else {
-      await prefs.setInt(_ageKey, age);
-    }
-    final existingLocation = prefs.getString(_locationKey);
-    if (existingLocation == null || existingLocation.isEmpty) {
-      await prefs.remove(_locationKey);
-    } else {
-      await prefs.setString(_locationKey, existingLocation);
-    }
-    await prefs.setString(_genderPreferenceKey, _selectedGender);
-    await prefs.setInt(_ageRangeMinKey, _ageRange.start.round());
-    await prefs.setInt(_ageRangeMaxKey, _ageRange.end.round());
-    await prefs.setInt(_distanceKmKey, _distance.round());
+    final age = int.tryParse(_ageController.text.trim()) ?? 0;
+    await _profileRepository.saveProfile(
+      Profile(
+        name: name,
+        age: age,
+        location: _initialLocation,
+        genderPreference: _selectedGender,
+        ageRangeMin: _ageRange.start.round(),
+        ageRangeMax: _ageRange.end.round(),
+        distanceKm: _distance.round(),
+      ),
+    );
     setState(() {
       _initialName = name;
-      _initialAge = age?.toString() ?? '';
+      _initialAge = age > 0 ? age.toString() : '';
       _initialGender = _selectedGender;
       _initialAgeRange = _ageRange;
       _initialDistance = _distance;
@@ -484,7 +468,8 @@ class _AccountScreenState extends State<AccountScreen> {
                             crossAxisAlignment: CrossAxisAlignment.stretch,
                             children: [
                               OutlinedButton(
-                                onPressed: () {
+                                onPressed: () async {
+                                  await _profileRepository.clearProfile();
                                   Navigator.pushAndRemoveUntil(
                                     context,
                                     MaterialPageRoute(
