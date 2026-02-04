@@ -14,7 +14,7 @@ class AppColors {
   static const primaryDeep = Color(0xFF55339A); // lidt dybere/varmere
 
   // Wingman
-  static const wingmanGoldSoft = Color(0xFFF3E1B5);
+  static const wingmanGoldSoft = Color(0xFFC9A24D);
 
   // Warm accent (til små highlights – ikke overalt)
   static const accent = Color(0xFFFFC6A8);    // soft peach
