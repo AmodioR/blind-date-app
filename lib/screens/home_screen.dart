@@ -31,10 +31,10 @@ body: Container(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.stretch,
                       children: [
-                        const SizedBox(height: 100),
+                        const SizedBox(height: 80),
                         Center(
                           child: SizedBox(
-                            height: 320,
+                            height: 280,
                             child: Image.asset(
                               'assets/images/BDV4.png',
                               fit: BoxFit.contain,
