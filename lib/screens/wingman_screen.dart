@@ -14,16 +14,26 @@ class WingmanScreen extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              const SizedBox(height: 4),
-              const Center(
-                child: Text(
-                  'AI Wingman',
-                  style: TextStyle(
-                    fontSize: 26,
-                    fontWeight: FontWeight.w800,
-                    color: AppColors.textSoft,
+              Stack(
+                alignment: Alignment.center,
+                children: [
+                  Align(
+                    alignment: Alignment.centerLeft,
+                    child: IconButton(
+                      icon: const Icon(Icons.arrow_back),
+                      color: AppColors.textSoft,
+                      onPressed: () => Navigator.pop(context),
+                    ),
                   ),
-                ),
+                  const Text(
+                    'AI Wingman',
+                    style: TextStyle(
+                      fontSize: 26,
+                      fontWeight: FontWeight.w800,
+                      color: AppColors.textSoft,
+                    ),
+                  ),
+                ],
               ),
               const SizedBox(height: 18),
               Container(
