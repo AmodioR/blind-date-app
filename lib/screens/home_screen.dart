@@ -63,7 +63,7 @@ body: Container(
                                   vertical: 12,
                                 ),
                                 decoration: BoxDecoration(
-                                  color: AppColors.wingmanGoldSoft,
+                                  gradient: AppColors.wingmanGoldGradient,
                                   borderRadius: BorderRadius.circular(16),
                                   border:
                                       Border.all(color: const Color(0xFFD9D0F5)),

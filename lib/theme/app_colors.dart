@@ -15,6 +15,16 @@ class AppColors {
 
   // Wingman
   static const wingmanGoldSoft = Color(0xFFC9A24D);
+  static const wingmanGoldSoftLight = Color(0xFFE1C57A);
+
+  static const wingmanGoldGradient = LinearGradient(
+    begin: Alignment.topLeft,
+    end: Alignment.bottomRight,
+    colors: [
+      wingmanGoldSoft,
+      wingmanGoldSoftLight,
+    ],
+  );
 
   // Warm accent (til små highlights – ikke overalt)
   static const accent = Color(0xFFFFC6A8);    // soft peach
