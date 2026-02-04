@@ -57,7 +57,7 @@ class _MainShellState extends State<MainShell> {
         child: BottomNavigationBar(
           currentIndex: _index,
           onTap: (i) => setState(() => _index = i),
-          selectedItemColor: const Color(0xFF6C4AB6),
+          selectedItemColor: AppColors.primary,
           unselectedItemColor: Colors.black45,
           showUnselectedLabels: true,
           items: const [
@@ -79,5 +79,4 @@ class _MainShellState extends State<MainShell> {
     );
   }
 }
-
 

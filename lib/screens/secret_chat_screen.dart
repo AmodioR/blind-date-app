@@ -144,7 +144,7 @@ class SecretChatScreen extends StatelessWidget {
                           borderRadius: BorderRadius.circular(14),
                         ),
                         child: const Icon(Icons.waving_hand_outlined,
-                            color: Color(0xFF6C4AB6)),
+                            color: AppColors.primary),
                       ),
                     ),
                   ],
@@ -382,7 +382,7 @@ class _MeBubble extends StatelessWidget {
           constraints: const BoxConstraints(maxWidth: 520),
           padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
           decoration: BoxDecoration(
-            color: const Color(0xFF6C4AB6),
+            color: AppColors.primary,
             borderRadius: BorderRadius.circular(16),
           ),
           child: Text(

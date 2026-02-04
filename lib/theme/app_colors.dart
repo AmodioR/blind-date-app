@@ -10,7 +10,7 @@ class AppColors {
   static const surfaceTint = Color(0xFFF8F3FF); // varm “tinted surface”
 
   // Brand
-  static const primary = Color(0xFF6C4AB6);   // din nuværende
+  static const primary = Color(0xFFED4DC1);   // brand primary
   static const primaryDeep = Color(0xFF55339A); // lidt dybere/varmere
 
   // Warm accent (til små highlights – ikke overalt)

@@ -281,7 +281,7 @@ class _ChatCard extends StatelessWidget {
                 minHeight: 6,
                 value: chat.uiProgress.clamp(0.0, 1.0),
                 backgroundColor: Colors.black.withOpacity(0.06),
-                valueColor: const AlwaysStoppedAnimation(Color(0xFF6C4AB6)),
+                valueColor: const AlwaysStoppedAnimation(AppColors.primary),
               ),
             ),
           ],
@@ -357,7 +357,7 @@ class _TurnIndicator extends StatelessWidget {
       width: 8,
       height: 8,
       decoration: BoxDecoration(
-        color: const Color(0xFF6C4AB6),
+        color: AppColors.primary,
         shape: BoxShape.circle,
       ),
     );
