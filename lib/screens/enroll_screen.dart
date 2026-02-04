@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../theme/app_colors.dart';
 import 'main_tab_screen.dart';
 
@@ -11,6 +12,14 @@ class EnrollScreen extends StatefulWidget {
 }
 
 class _EnrollScreenState extends State<EnrollScreen> {
+  static const _nameKey = 'enroll_name';
+  static const _ageKey = 'enroll_age';
+  static const _locationKey = 'enroll_location';
+  static const _genderPreferenceKey = 'enroll_gender_preference';
+  static const _ageRangeMinKey = 'enroll_age_range_min';
+  static const _ageRangeMaxKey = 'enroll_age_range_max';
+  static const _distanceKmKey = 'enroll_distance_km';
+
   int _currentStep = 1;
   final TextEditingController _nameController = TextEditingController();
   final TextEditingController _ageController = TextEditingController();
@@ -272,13 +281,36 @@ class _EnrollScreenState extends State<EnrollScreen> {
     final label = _currentStep == 1 ? 'Næste' : 'Fortsæt';
 
     return ElevatedButton(
-      onPressed: () {
+      onPressed: () async {
         if (_currentStep == 1) {
           setState(() {
             _currentStep = 2;
           });
           return;
         }
+        final prefs = await SharedPreferences.getInstance();
+        final name = _nameController.text.trim();
+        final age = int.tryParse(_ageController.text.trim());
+        final location = _locationController.text.trim();
+        if (name.isEmpty) {
+          await prefs.remove(_nameKey);
+        } else {
+          await prefs.setString(_nameKey, name);
+        }
+        if (age == null) {
+          await prefs.remove(_ageKey);
+        } else {
+          await prefs.setInt(_ageKey, age);
+        }
+        if (location.isEmpty) {
+          await prefs.remove(_locationKey);
+        } else {
+          await prefs.setString(_locationKey, location);
+        }
+        await prefs.setString(_genderPreferenceKey, _selectedGender);
+        await prefs.setInt(_ageRangeMinKey, _ageRange.start.round());
+        await prefs.setInt(_ageRangeMaxKey, _ageRange.end.round());
+        await prefs.setInt(_distanceKmKey, _distance.round());
         Navigator.of(context).pushReplacement(
           MaterialPageRoute(builder: (_) => const MainTabScreen()),
         );

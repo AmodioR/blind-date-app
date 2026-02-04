@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../theme/app_colors.dart';
 import 'landing_screen.dart';
 
@@ -11,6 +12,13 @@ class AccountScreen extends StatefulWidget {
 }
 
 class _AccountScreenState extends State<AccountScreen> {
+  static const _nameKey = 'enroll_name';
+  static const _ageKey = 'enroll_age';
+  static const _genderPreferenceKey = 'enroll_gender_preference';
+  static const _ageRangeMinKey = 'enroll_age_range_min';
+  static const _ageRangeMaxKey = 'enroll_age_range_max';
+  static const _distanceKmKey = 'enroll_distance_km';
+
   final TextEditingController _nameController = TextEditingController();
   final TextEditingController _ageController = TextEditingController();
 
@@ -29,6 +37,45 @@ class _AccountScreenState extends State<AccountScreen> {
     super.initState();
     _nameController.text = _initialName;
     _ageController.text = _initialAge;
+    _loadProfile();
+  }
+
+  Future<void> _loadProfile() async {
+    final prefs = await SharedPreferences.getInstance();
+    final name = prefs.getString(_nameKey);
+    final age = prefs.getInt(_ageKey);
+    final genderPreference = prefs.getString(_genderPreferenceKey);
+    final ageRangeMin = prefs.getInt(_ageRangeMinKey);
+    final ageRangeMax = prefs.getInt(_ageRangeMaxKey);
+    final distance = prefs.getInt(_distanceKmKey);
+
+    if (!mounted) {
+      return;
+    }
+
+    setState(() {
+      if (name != null && name.isNotEmpty) {
+        _initialName = name;
+        _nameController.text = name;
+      }
+      if (age != null) {
+        _initialAge = age.toString();
+        _ageController.text = _initialAge;
+      }
+      if (genderPreference != null && genderPreference.isNotEmpty) {
+        _initialGender = genderPreference;
+        _selectedGender = genderPreference;
+      }
+      if (ageRangeMin != null && ageRangeMax != null) {
+        _initialAgeRange =
+            RangeValues(ageRangeMin.toDouble(), ageRangeMax.toDouble());
+        _ageRange = _initialAgeRange;
+      }
+      if (distance != null) {
+        _initialDistance = distance.toDouble();
+        _distance = _initialDistance;
+      }
+    });
   }
 
   @override
