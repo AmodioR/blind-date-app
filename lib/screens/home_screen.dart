@@ -63,7 +63,7 @@ body: Container(
                                   vertical: 12,
                                 ),
                                 decoration: BoxDecoration(
-                                  color: const Color(0xFFEDE7FF),
+                                  color: const Color(0xFFC9A24D),
                                   borderRadius: BorderRadius.circular(16),
                                   border:
                                       Border.all(color: const Color(0xFFD9D0F5)),
