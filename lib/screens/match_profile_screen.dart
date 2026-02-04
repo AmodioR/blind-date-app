@@ -1,4 +1,5 @@
 import 'dart:ui';
+import 'dart:math';
 
 import 'package:flutter/material.dart';
 import '../theme/app_colors.dart';
@@ -97,7 +98,12 @@ class MatchProfileScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    const bool isProfileReadyToUnlock = false;
+    final int myCount = 0;
+    final int theirCount = 0;
+    final double unlockProgress = (min(myCount, theirCount) / 10)
+        .clamp(0.0, 1.0)
+        .toDouble();
+    final bool isProfileReadyToUnlock = unlockProgress >= 1;
     return Scaffold(
       body: Stack(
         fit: StackFit.expand,
@@ -176,11 +182,27 @@ class MatchProfileScreen extends StatelessWidget {
                         ),
                       ),
                       const SizedBox(height: 24),
+                      ClipRRect(
+                        borderRadius: BorderRadius.circular(999),
+                        child: LinearProgressIndicator(
+                          value: unlockProgress,
+                          minHeight: 4,
+                          backgroundColor:
+                              Colors.black.withValues(alpha: 0.08),
+                          valueColor:
+                              const AlwaysStoppedAnimation(AppColors.primary),
+                        ),
+                      ),
+                      const SizedBox(height: 12),
                       SizedBox(
                         width: double.infinity,
                         child: ElevatedButton(
                           onPressed:
-                              isProfileReadyToUnlock ? () {} : null,
+                              isProfileReadyToUnlock
+                                  ? () {
+                                      debugPrint('TODO: unlock profile');
+                                    }
+                                  : null,
                           style: ElevatedButton.styleFrom(
                             backgroundColor: isProfileReadyToUnlock
                                 ? AppColors.primary
