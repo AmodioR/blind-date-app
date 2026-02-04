@@ -39,7 +39,7 @@ class WingmanScreen extends StatelessWidget {
               Container(
                 padding: const EdgeInsets.all(20),
                 decoration: BoxDecoration(
-                  color: AppColors.surface,
+                  color: AppColors.wingmanGoldSoft,
                   borderRadius: BorderRadius.circular(24),
                   border: Border.all(color: AppColors.border),
                   boxShadow: const [
@@ -129,7 +129,7 @@ class _InfoBullet extends StatelessWidget {
           height: 6,
           width: 6,
           decoration: const BoxDecoration(
-            color: AppColors.primary,
+            color: Colors.black,
             shape: BoxShape.circle,
           ),
         ),

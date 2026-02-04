@@ -71,7 +71,7 @@ body: Container(
                                 child: const Row(
                                   children: [
                                     Icon(Icons.waving_hand_outlined,
-                                        color: AppColors.primary, size: 18),
+                                        color: Colors.black, size: 18),
                                     SizedBox(width: 10),
                                     Expanded(
                                       child: Text(
