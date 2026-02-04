@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:flutter/material.dart';
 import '../theme/app_colors.dart';
 import 'secret_chat_screen.dart';
@@ -30,6 +32,14 @@ class OpenChatsScreen extends StatelessWidget {
           : _ChatLockState.locked;
     }
 
+    double progressFor(String chatId) {
+      final messages = chatConversations[chatId]?.messages ?? [];
+      final myCount = messages.where((message) => message.isMe).length;
+      final theirCount = messages.length - myCount;
+      final progress = min(myCount, theirCount) / 10;
+      return progress.clamp(0.0, 1.0);
+    }
+
     // UI først: dummy chats
     final chats = <_ChatPreview>[
       _ChatPreview(
@@ -39,7 +49,7 @@ class OpenChatsScreen extends StatelessWidget {
         lockState: lockStateFor('jonas-24'),
         lastMessage: lastMessageFor('jonas-24'),
         time: '12:41',
-        progress: 0.35,
+        progress: progressFor('jonas-24'),
         unread: 0,
       ),
       _ChatPreview(
@@ -49,7 +59,7 @@ class OpenChatsScreen extends StatelessWidget {
         lockState: lockStateFor('magnus-22'),
         lastMessage: lastMessageFor('magnus-22'),
         time: 'i går',
-        progress: 0.92,
+        progress: progressFor('magnus-22'),
         unread: 2,
       ),
       _ChatPreview(
@@ -59,7 +69,7 @@ class OpenChatsScreen extends StatelessWidget {
         lockState: lockStateFor('oscar-25'),
         lastMessage: lastMessageFor('oscar-25'),
         time: 'man.',
-        progress: 0.55,
+        progress: progressFor('oscar-25'),
         unread: 0,
       ),
       _ChatPreview(
@@ -69,7 +79,7 @@ class OpenChatsScreen extends StatelessWidget {
         lockState: lockStateFor('sara-23'),
         lastMessage: lastMessageFor('sara-23'),
         time: 'søn.',
-        progress: 0.2,
+        progress: progressFor('sara-23'),
         unread: 0,
       ),
     ];
