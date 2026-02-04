@@ -7,6 +7,43 @@ class OpenChatsScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final chatMessages = <String, List<String>>{
+      'jonas-24': [
+        'Godmorgen! Har du fået din kaffe endnu?',
+        'Ja! Og jeg prøver en ny bønne i dag ☕️',
+        'Nice, jeg er mere te-person. Hvad er dit go-to humørboost?',
+      ],
+      'magnus-22': [
+        'Hvilken type musik får dig altid i godt humør?',
+        'Indie pop eller noget med god energi. Dig?',
+        'Jeg er 90’er rock hele vejen. Skal vi lave en playliste?',
+      ],
+      'oscar-25': [
+        'Jeg tror vi ville være gode til at rejse sammen.',
+        'Helt enig! Hvad er dit næste drømmerejsemål?',
+        'Japan. Street food + neon. Hvordan med dig?',
+      ],
+      'sara-23': [
+        'Hej! Jeg kan se vi begge elsker brunch.',
+        'Det er mit yndlingsmåltid. Har du et favoritsted?',
+        'Jeg har en lille café jeg elsker. Vil du have navnet?',
+      ],
+    };
+
+    String? lastMessageFor(String chatId) {
+      final messages = chatMessages[chatId];
+      if (messages == null || messages.isEmpty) {
+        return null;
+      }
+
+      final lastNonEmpty = messages.lastWhere(
+        (message) => message.trim().isNotEmpty,
+        orElse: () => '',
+      );
+
+      return lastNonEmpty.isEmpty ? null : lastNonEmpty;
+    }
+
     // UI først: dummy chats
     final chats = <_ChatPreview>[
       _ChatPreview(
@@ -14,7 +51,7 @@ class OpenChatsScreen extends StatelessWidget {
         name: 'Jonas',
         age: 24,
         lockState: _ChatLockState.locked,
-        lastMessage: 'Haha okay, det giver faktisk mening 😄',
+        lastMessage: lastMessageFor('jonas-24'),
         time: '12:41',
         progress: 0.35,
         unread: 0,
@@ -24,7 +61,7 @@ class OpenChatsScreen extends StatelessWidget {
         name: 'Magnus',
         age: 22,
         lockState: _ChatLockState.ready,
-        lastMessage: 'Hvilken type musik får dig altid i godt humør?',
+        lastMessage: lastMessageFor('magnus-22'),
         time: 'i går',
         progress: 0.92,
         unread: 2,
@@ -34,7 +71,7 @@ class OpenChatsScreen extends StatelessWidget {
         name: 'Oscar',
         age: 25,
         lockState: _ChatLockState.locked,
-        lastMessage: 'Jeg tror vi ville være gode til at rejse sammen.',
+        lastMessage: lastMessageFor('oscar-25'),
         time: 'man.',
         progress: 0.55,
         unread: 0,
@@ -44,7 +81,7 @@ class OpenChatsScreen extends StatelessWidget {
         name: 'Sara',
         age: 23,
         lockState: _ChatLockState.locked,
-        lastMessage: null,
+        lastMessage: lastMessageFor('sara-23'),
         time: 'søn.',
         progress: 0.2,
         unread: 0,
@@ -186,7 +223,7 @@ class _ChatCard extends StatelessWidget {
                       ),
                       const SizedBox(height: 6),
                       Text(
-                        chat.lastMessage ?? 'Start samtalen…',
+                        chat.lastMessage ?? 'Start en samtale',
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                         style: const TextStyle(
