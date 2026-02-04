@@ -71,7 +71,7 @@ body: Container(
                                 child: const Row(
                                   children: [
                                     Icon(Icons.waving_hand_outlined,
-                                        color: Color(0xFF6C4AB6), size: 18),
+                                        color: AppColors.primary, size: 18),
                                     SizedBox(width: 10),
                                     Expanded(
                                       child: Text(
@@ -178,7 +178,7 @@ body: Container(
                                 );
                               },
                               style: ElevatedButton.styleFrom(
-                                backgroundColor: const Color(0xFF6C4AB6),
+                                backgroundColor: AppColors.primary,
                                 padding:
                                     const EdgeInsets.symmetric(vertical: 22),
                                 shape: RoundedRectangleBorder(
