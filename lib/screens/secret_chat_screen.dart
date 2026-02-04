@@ -9,31 +9,37 @@ class SecretChatScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final chatData = _chatConversations[chatId] ??
-        _ChatData(
-          name: title ?? 'Nyt match',
-          age: 23,
-          messages: const [
-            _ChatMessage(
-              text:
-                  'Hej 😄 Jeg synes virkelig konceptet her er fedt. Det føles meget mere ægte.',
-              isMe: false,
-            ),
-            _ChatMessage(
-              text:
-                  'Tak! Jeg er helt enig. Det er meget rarere at lære hinanden at kende først 😊',
-              isMe: true,
-            ),
-            _ChatMessage(
-              text: 'Helt sikkert! Hvad laver du normalt i din fritid?',
-              isMe: false,
-            ),
-            _ChatMessage(
-              text: 'Jeg laver faktisk musik og gamer en del. Hvad med dig?',
-              isMe: true,
-            ),
-          ],
-        );
+    final chatData = chatId == null
+        ? _ChatData(
+            name: title ?? 'Nyt match',
+            age: 23,
+            messages: const [],
+          )
+        : _chatConversations[chatId] ??
+            _ChatData(
+              name: title ?? 'Nyt match',
+              age: 23,
+              messages: const [
+                _ChatMessage(
+                  text:
+                      'Hej 😄 Jeg synes virkelig konceptet her er fedt. Det føles meget mere ægte.',
+                  isMe: false,
+                ),
+                _ChatMessage(
+                  text:
+                      'Tak! Jeg er helt enig. Det er meget rarere at lære hinanden at kende først 😊',
+                  isMe: true,
+                ),
+                _ChatMessage(
+                  text: 'Helt sikkert! Hvad laver du normalt i din fritid?',
+                  isMe: false,
+                ),
+                _ChatMessage(
+                  text: 'Jeg laver faktisk musik og gamer en del. Hvad med dig?',
+                  isMe: true,
+                ),
+              ],
+            );
 
     return Scaffold(
       appBar: AppBar(
