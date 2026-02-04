@@ -91,7 +91,7 @@ class _SecretChatScreenState extends State<SecretChatScreen> {
   @override
   Widget build(BuildContext context) {
     final myCount = _messages.where((message) => message.isMe).length;
-    final theirCount = _messages.length - myCount;
+    final theirCount = _messages.where((message) => !message.isMe).length;
     final progress = min(myCount, theirCount) / 10;
     final clampedProgress = progress.clamp(0.0, 1.0);
     final statusText = clampedProgress >= 1.0 ? 'Klar' : 'Låst';
@@ -236,6 +236,9 @@ class _SecretChatScreenState extends State<SecretChatScreen> {
                               builder: (_) => MatchProfileScreen(
                                 name: _chatName,
                                 age: _chatAge,
+                                unlockProgress: clampedProgress,
+                                myCount: myCount,
+                                theirCount: theirCount,
                               ),
                             ),
                           );
