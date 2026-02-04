@@ -216,16 +216,84 @@ const Map<String, ChatData> chatConversations = {
     age: 22,
     messages: const [
       ChatMessage(
-        text: 'Hvilken type musik får dig altid i godt humør?',
+        text: 'Godmorgen, sovet godt?',
         isMe: false,
       ),
       ChatMessage(
-        text: 'Indie pop eller noget med god energi. Dig?',
+        text: 'Ja, helt roligt i nat.',
         isMe: true,
       ),
       ChatMessage(
-        text: 'Jeg er 90’er rock hele vejen. Skal vi lave en playliste?',
+        text: 'Hvad skal din dag?',
         isMe: false,
+      ),
+      ChatMessage(
+        text: 'Arbejde og lidt træning.',
+        isMe: true,
+      ),
+      ChatMessage(
+        text: 'Lyder fint. Hvilken træning?',
+        isMe: false,
+      ),
+      ChatMessage(
+        text: 'En kort løbetur.',
+        isMe: true,
+      ),
+      ChatMessage(
+        text: 'Jeg går en tur senere.',
+        isMe: false,
+      ),
+      ChatMessage(
+        text: 'Det gør godt.',
+        isMe: true,
+      ),
+      ChatMessage(
+        text: 'Har du frokostplaner?',
+        isMe: false,
+      ),
+      ChatMessage(
+        text: 'Salat og kaffe.',
+        isMe: true,
+      ),
+      ChatMessage(
+        text: 'Kaffe er altid godt.',
+        isMe: false,
+      ),
+      ChatMessage(
+        text: 'Helt enig.',
+        isMe: true,
+      ),
+      ChatMessage(
+        text: 'Hvilken musik nu?',
+        isMe: false,
+      ),
+      ChatMessage(
+        text: 'Rolig indie i dag.',
+        isMe: true,
+      ),
+      ChatMessage(
+        text: 'Det passer til vejret.',
+        isMe: false,
+      ),
+      ChatMessage(
+        text: 'Ja, det gør.',
+        isMe: true,
+      ),
+      ChatMessage(
+        text: 'Skal vi lave playlisten?',
+        isMe: false,
+      ),
+      ChatMessage(
+        text: 'Gerne, send dine favoritter.',
+        isMe: true,
+      ),
+      ChatMessage(
+        text: 'Jeg sender et par.',
+        isMe: false,
+      ),
+      ChatMessage(
+        text: 'Fedt, jeg glæder mig.',
+        isMe: true,
       ),
     ],
   ),
