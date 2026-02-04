@@ -70,7 +70,8 @@ class _EnrollScreenState extends State<EnrollScreen> {
           style: TextStyle(
             fontSize: 24,
             fontWeight: FontWeight.w700,
-            color: AppColors.textPrimary,
+            color: AppColors.textSoft
+,
           ),
         ),
         const SizedBox(height: 6),
@@ -134,7 +135,8 @@ class _EnrollScreenState extends State<EnrollScreen> {
           style: TextStyle(
             fontSize: 24,
             fontWeight: FontWeight.w700,
-            color: AppColors.textPrimary,
+            color: AppColors.textSoft
+,
           ),
         ),
         const SizedBox(height: 6),
