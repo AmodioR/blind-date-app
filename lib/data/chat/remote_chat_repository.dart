@@ -49,7 +49,7 @@ class RemoteChatRepository implements ChatRepository {
 
       final lastMessageRows = await client
           .from(_messagesTable)
-          .select('body, created_at')
+          .select('body, created_at, sender_id')
           .eq('match_id', matchId)
           .order('created_at', ascending: false)
           .limit(1);
@@ -74,6 +74,9 @@ class RemoteChatRepository implements ChatRepository {
       final clampedProgress = unlockProgress.clamp(0.0, 1.0).toDouble();
 
       final last = lastMessageRows.isEmpty ? null : lastMessageRows.first;
+      final lastMessageSenderId = last?['sender_id']?.toString();
+      final isMyTurn =
+          lastMessageSenderId != null && lastMessageSenderId != user.id;
       final matchCreatedAt = DateTime.tryParse(row['created_at'] as String? ?? '');
       final lastMessageAt = DateTime.tryParse(last?['created_at'] as String? ?? '') ??
           matchCreatedAt ??
@@ -89,6 +92,8 @@ class RemoteChatRepository implements ChatRepository {
           unlockProgress: clampedProgress,
           lastMessageAt: lastMessageAt,
           lastMessagePreview: last?['body'] as String? ?? '',
+          lastMessageSenderId: lastMessageSenderId,
+          isMyTurn: isMyTurn,
         ),
       );
     }

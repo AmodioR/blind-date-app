@@ -6,6 +6,8 @@ class ChatThread {
   final double unlockProgress;
   final DateTime lastMessageAt;
   final String lastMessagePreview;
+  final String? lastMessageSenderId;
+  final bool isMyTurn;
 
   const ChatThread({
     required this.id,
@@ -15,6 +17,8 @@ class ChatThread {
     required this.unlockProgress,
     required this.lastMessageAt,
     required this.lastMessagePreview,
+    this.lastMessageSenderId,
+    this.isMyTurn = false,
   });
 }
 

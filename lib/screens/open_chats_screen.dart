@@ -82,6 +82,7 @@ class _OpenChatsScreenState extends State<OpenChatsScreen> {
       bool isUsersTurn = false;
 
       if (AppConfig.useRemoteChat) {
+        isUsersTurn = thread.isMyTurn;
         lastMessage = thread.lastMessagePreview.trim().isEmpty ? null : thread.lastMessagePreview;
       } else {
         final messages = await _repository.loadMessages(thread.id);
