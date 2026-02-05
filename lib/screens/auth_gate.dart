@@ -6,8 +6,52 @@ import 'enroll_screen.dart';
 import 'landing_screen.dart';
 import 'main_tab_screen.dart';
 
-class AuthGate extends StatelessWidget {
+class AuthGate extends StatefulWidget {
   const AuthGate({super.key});
+
+  @override
+  State<AuthGate> createState() => _AuthGateState();
+}
+
+class _AuthGateState extends State<AuthGate> {
+  Session? _currentSession;
+  Future<Profile?>? _profileFuture;
+
+  @override
+  void initState() {
+    super.initState();
+    final client = Supabase.instance.client;
+    _currentSession = client.auth.currentSession;
+    if (_currentSession != null) {
+      _profileFuture = ProfileRepositoryFactory.create().loadProfile();
+    }
+  }
+
+  void _updateSession(Session? session) {
+    if (_currentSession?.accessToken == session?.accessToken) {
+      return;
+    }
+    setState(() {
+      _currentSession = session;
+      if (session == null) {
+        _profileFuture = Future.value(null);
+      } else {
+        _profileFuture = ProfileRepositoryFactory.create().loadProfile();
+      }
+    });
+  }
+
+  void _scheduleSessionUpdate(Session? session) {
+    if (_currentSession?.accessToken == session?.accessToken) {
+      return;
+    }
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) {
+        return;
+      }
+      _updateSession(session);
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -16,10 +60,14 @@ class AuthGate extends StatelessWidget {
       stream: client.auth.onAuthStateChange,
       builder: (context, snapshot) {
         final session = snapshot.data?.session ?? client.auth.currentSession;
+        _scheduleSessionUpdate(session);
         if (session != null) {
-          final profileRepository = ProfileRepositoryFactory.create();
+          final profileFuture = _profileFuture;
+          if (profileFuture == null) {
+            return const _AuthLoadingScreen();
+          }
           return FutureBuilder<Profile?>(
-            future: profileRepository.loadProfile(),
+            future: profileFuture,
             builder: (context, profileSnapshot) {
               if (profileSnapshot.connectionState != ConnectionState.done) {
                 return const _AuthLoadingScreen();
