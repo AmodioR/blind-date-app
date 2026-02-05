@@ -15,6 +15,14 @@ class MatchmakingRepositoryFactory {
 
 class _DisabledMatchmakingRepository implements MatchmakingRepository {
   @override
+  Future<void> setSearching({required bool active}) async {}
+
+  @override
+  Future<String?> tryFindMatch() async {
+    return null;
+  }
+
+  @override
   Future<String?> findBlindDateMatchId() async {
     return null;
   }
