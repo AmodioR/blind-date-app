@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
+import '../config/app_config.dart';
+import '../config/supabase_config.dart';
 import '../data/chat/chat_models.dart';
 import '../data/chat/chat_repository_factory.dart';
 import '../theme/app_colors.dart';
@@ -13,32 +16,89 @@ class OpenChatsScreen extends StatefulWidget {
 }
 
 class _OpenChatsScreenState extends State<OpenChatsScreen> {
-  late final Future<List<_ChatPreview>> _chatsFuture;
+  final _repository = ChatRepositoryFactory.create();
+  late Future<List<_ChatPreview>> _chatsFuture;
+  RealtimeChannel? _messagesChannel;
 
   @override
   void initState() {
     super.initState();
+    _refreshChats();
+    _subscribeToMessages();
+  }
+
+  @override
+  void dispose() {
+    if (_messagesChannel != null) {
+      Supabase.instance.client.removeChannel(_messagesChannel!);
+      _messagesChannel = null;
+    }
+    super.dispose();
+  }
+
+  void _refreshChats() {
     _chatsFuture = _loadChats();
+    if (mounted) {
+      setState(() {});
+    }
+  }
+
+  void _subscribeToMessages() {
+    if (!AppConfig.useRemoteChat || !SupabaseConfig.isConfigured || _messagesChannel != null) {
+      return;
+    }
+
+    final client = Supabase.instance.client;
+    final session = client.auth.currentSession;
+    final user = client.auth.currentUser;
+    if (session == null || user == null) {
+      return;
+    }
+
+    ChatMessage.currentUserId = user.id;
+
+    _messagesChannel = client
+        .channel('open-chats:messages')
+        .onPostgresChanges(
+          event: PostgresChangeEvent.insert,
+          schema: 'public',
+          table: 'messages',
+          callback: (_) {
+            if (!mounted) {
+              return;
+            }
+            _refreshChats();
+          },
+        )
+        .subscribe();
   }
 
   Future<List<_ChatPreview>> _loadChats() async {
-    final repository = ChatRepositoryFactory.create();
-    final threads = await repository.listThreads();
+    final threads = await _repository.listThreads();
     final chats = <_ChatPreview>[];
 
     for (final thread in threads) {
-      final messages = await repository.loadMessages(thread.id);
-      final hasMessages = messages.isNotEmpty;
-      final isUsersTurn = hasMessages ? !messages.last.isMe : false;
+      String? lastMessage;
+      bool isUsersTurn = false;
+
+      if (AppConfig.useRemoteChat) {
+        lastMessage = thread.lastMessagePreview.trim().isEmpty ? null : thread.lastMessagePreview;
+      } else {
+        final messages = await _repository.loadMessages(thread.id);
+        final hasMessages = messages.isNotEmpty;
+        isUsersTurn = hasMessages ? !messages.last.isMe : false;
+        lastMessage = thread.lastMessagePreview.trim().isEmpty
+            ? (hasMessages ? messages.last.body : null)
+            : thread.lastMessagePreview;
+      }
+
       chats.add(
         _ChatPreview(
           id: thread.id,
           name: thread.displayName,
           age: thread.displayAge,
           lockState: thread.isLocked ? _ChatLockState.locked : _ChatLockState.ready,
-          lastMessage: thread.lastMessagePreview.trim().isEmpty
-              ? (hasMessages ? messages.last.body : null)
-              : thread.lastMessagePreview,
+          lastMessage: lastMessage,
           time: _timeLabelFor(thread),
           progress: thread.unlockProgress,
           isUsersTurn: isUsersTurn,
@@ -56,7 +116,7 @@ class _OpenChatsScreenState extends State<OpenChatsScreen> {
       'oscar-25': 'man.',
       'sara-23': 'søn.',
     };
-    if (localDemoLabels.containsKey(thread.id)) {
+    if (!AppConfig.useRemoteChat && localDemoLabels.containsKey(thread.id)) {
       return localDemoLabels[thread.id]!;
     }
 
