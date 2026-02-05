@@ -17,7 +17,7 @@ class RemoteProfileRepository implements ProfileRepository {
 
     final data = await client
         .from(_tableName)
-        .select()
+        .select('name, age, location, gender, gender_preference, age_range_min, age_range_max, distance_km')
         .eq('id', user.id)
         .maybeSingle();
 
@@ -29,6 +29,7 @@ class RemoteProfileRepository implements ProfileRepository {
       name: data['name'] as String? ?? '',
       age: data['age'] as int? ?? 0,
       location: data['location'] as String? ?? '',
+      gender: data['gender'] as String?,
       genderPreference: data['gender_preference'] as String? ?? 'Alle',
       ageRangeMin: data['age_range_min'] as int? ?? 24,
       ageRangeMax: data['age_range_max'] as int? ?? 36,
@@ -45,11 +46,14 @@ class RemoteProfileRepository implements ProfileRepository {
       throw StateError('Cannot save profile without an authenticated user.');
     }
 
+    final trimmedGender = profile.gender?.trim();
+
     await client.from(_tableName).upsert({
       'id': user.id,
       'name': profile.name.trim(),
       'age': profile.age,
       'location': profile.location.trim(),
+      'gender': (trimmedGender == null || trimmedGender.isEmpty) ? null : trimmedGender,
       'gender_preference': profile.genderPreference,
       'age_range_min': profile.ageRangeMin,
       'age_range_max': profile.ageRangeMax,

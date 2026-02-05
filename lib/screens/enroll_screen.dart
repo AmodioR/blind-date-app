@@ -20,6 +20,7 @@ class _EnrollScreenState extends State<EnrollScreen> {
   final TextEditingController _ageController = TextEditingController();
   final TextEditingController _locationController = TextEditingController();
 
+  String? _selectedOwnGender;
   String _selectedGender = 'Alle';
   RangeValues _ageRange = const RangeValues(23, 35);
   double _distance = 25;
@@ -152,6 +153,52 @@ class _EnrollScreenState extends State<EnrollScreen> {
           ),
         ),
         const SizedBox(height: 20),
+        const Text(
+          'Dit køn',
+          style: TextStyle(
+            fontSize: 13,
+            color: AppColors.textMuted,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+        const SizedBox(height: 10),
+        Wrap(
+          spacing: 10,
+          runSpacing: 10,
+          children: ['Mand', 'Kvinde']
+              .map(
+                (option) => ChoiceChip(
+                  label: Text(option),
+                  selected: _selectedOwnGender == option,
+                  onSelected: (_) {
+                    setState(() {
+                      _selectedOwnGender = option;
+                    });
+                  },
+                  selectedColor: AppColors.primary.withOpacity(0.15),
+                  backgroundColor: AppColors.surfaceTint,
+                  labelStyle: TextStyle(
+                    color: _selectedOwnGender == option
+                        ? AppColors.primaryDeep
+                        : AppColors.textSoft,
+                    fontWeight: FontWeight.w600,
+                  ),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    side: BorderSide(
+                      color: _selectedOwnGender == option
+                          ? AppColors.primary
+                          : AppColors.border,
+                    ),
+                  ),
+                ),
+              )
+              .toList(),
+        ),
+        const Padding(
+          padding: EdgeInsets.symmetric(vertical: 16),
+          child: Divider(height: 1),
+        ),
         const Text(
           'Kønspræference',
           style: TextStyle(
@@ -291,6 +338,7 @@ class _EnrollScreenState extends State<EnrollScreen> {
             name: name,
             age: age,
             location: location,
+            gender: _selectedOwnGender,
             genderPreference: _selectedGender,
             ageRangeMin: _ageRange.start.round(),
             ageRangeMax: _ageRange.end.round(),
