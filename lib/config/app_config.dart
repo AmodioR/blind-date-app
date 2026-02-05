@@ -3,4 +3,5 @@ class AppConfig {
 
   static const bool useRemoteProfile = true;
   static const bool useRemoteChat = false;
+  static const bool useRemoteMatchmaking = true;
 }
