@@ -1,7 +1,10 @@
 import 'dart:math';
 
 import 'package:flutter/material.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
+import '../config/app_config.dart';
+import '../config/supabase_config.dart';
 import '../data/chat/chat_models.dart';
 import '../data/chat/chat_repository_factory.dart';
 import '../sheets/wingman_sheet.dart';
@@ -22,7 +25,9 @@ class _SecretChatScreenState extends State<SecretChatScreen> {
   late String _chatName;
   late int _chatAge;
   List<ChatMessage> _messages = const [];
+  final Set<String> _optimisticMessageKeys = <String>{};
   bool _isLoading = true;
+  RealtimeChannel? _messagesChannel;
 
   final TextEditingController _textController = TextEditingController();
   final ScrollController _scrollController = ScrollController();
@@ -64,10 +69,114 @@ class _SecretChatScreenState extends State<SecretChatScreen> {
       _messages = messages;
       _isLoading = false;
     });
+
+    _subscribeToMatchMessages(matchId: widget.chatId!);
+  }
+
+  void _subscribeToMatchMessages({required String matchId}) {
+    if (_messagesChannel != null ||
+        !AppConfig.useRemoteChat ||
+        !SupabaseConfig.isConfigured) {
+      return;
+    }
+
+    final client = Supabase.instance.client;
+    final session = client.auth.currentSession;
+    final user = client.auth.currentUser;
+    if (session == null || user == null) {
+      return;
+    }
+
+    ChatMessage.currentUserId = user.id;
+
+    _messagesChannel = client
+        .channel('messages:$matchId')
+        .onPostgresChanges(
+          event: PostgresChangeEvent.insert,
+          schema: 'public',
+          table: 'messages',
+          filter: PostgresChangeFilter(
+            type: PostgresChangeFilterType.eq,
+            column: 'match_id',
+            value: matchId,
+          ),
+          callback: (payload) {
+            final row = payload.newRecord;
+            final realtimeMessage = ChatMessage(
+              id: row['id'].toString(),
+              matchId: row['match_id'].toString(),
+              senderId: row['sender_id'].toString(),
+              body: row['body'] as String? ?? '',
+              createdAt: DateTime.tryParse(row['created_at'] as String? ?? '') ??
+                  DateTime.now(),
+            );
+
+            final optimisticKey =
+                _messageKey(senderId: realtimeMessage.senderId, body: realtimeMessage.body);
+            if (realtimeMessage.senderId == ChatMessage.currentUserId &&
+                _optimisticMessageKeys.remove(optimisticKey)) {
+              return;
+            }
+
+            if (_messages.any((message) => message.id == realtimeMessage.id)) {
+              return;
+            }
+
+            final wasNearBottom = _isNearBottom();
+            if (!mounted) {
+              return;
+            }
+
+            setState(() {
+              _messages = [..._messages, realtimeMessage];
+            });
+
+            if (wasNearBottom) {
+              _scrollToBottom(animated: true);
+            }
+          },
+        )
+        .subscribe();
+  }
+
+  bool _isNearBottom() {
+    if (!_scrollController.hasClients) {
+      return true;
+    }
+
+    final position = _scrollController.position;
+    return (position.maxScrollExtent - position.pixels) <= 72;
+  }
+
+  String _messageKey({required String senderId, required String body}) {
+    return '$senderId|${body.trim()}';
+  }
+
+  void _scrollToBottom({required bool animated}) {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!_scrollController.hasClients) {
+        return;
+      }
+      final max = _scrollController.position.maxScrollExtent;
+      if (animated) {
+        _scrollController.animateTo(
+          max,
+          duration: const Duration(milliseconds: 200),
+          curve: Curves.easeOut,
+        );
+        return;
+      }
+      _scrollController.jumpTo(max);
+    });
   }
 
   @override
   void dispose() {
+    final channel = _messagesChannel;
+    if (channel != null) {
+      Supabase.instance.client.removeChannel(channel);
+      _messagesChannel = null;
+    }
     _textController.dispose();
     _scrollController.dispose();
     super.dispose();
@@ -80,20 +189,25 @@ class _SecretChatScreenState extends State<SecretChatScreen> {
       return;
     }
 
+    final optimisticMessage = ChatMessage(
+      id: 'local-${DateTime.now().microsecondsSinceEpoch}',
+      matchId: matchId,
+      senderId: ChatMessage.currentUserId,
+      body: text,
+      createdAt: DateTime.now(),
+    );
+    final optimisticKey =
+        _messageKey(senderId: optimisticMessage.senderId, body: optimisticMessage.body);
+
+    setState(() {
+      _messages = [..._messages, optimisticMessage];
+      _optimisticMessageKeys.add(optimisticKey);
+    });
+
+    _scrollToBottom(animated: true);
+
     await _repository.sendMessage(matchId: matchId, body: text);
     _textController.clear();
-    await _loadData();
-
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (!_scrollController.hasClients) {
-        return;
-      }
-      _scrollController.animateTo(
-        _scrollController.position.maxScrollExtent,
-        duration: const Duration(milliseconds: 200),
-        curve: Curves.easeOut,
-      );
-    });
   }
 
   @override
