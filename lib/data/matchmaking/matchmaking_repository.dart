@@ -3,5 +3,7 @@ abstract class MatchmakingRepository {
 
   Future<String?> tryFindMatch();
 
+  Future<String?> getLatestMyMatchId();
+
   Future<String?> findBlindDateMatchId();
 }
