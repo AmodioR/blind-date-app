@@ -1,107 +1,97 @@
-import 'dart:math';
-
 import 'package:flutter/material.dart';
+
+import '../data/chat/chat_models.dart';
+import '../data/chat/chat_repository_factory.dart';
 import '../theme/app_colors.dart';
 import 'secret_chat_screen.dart';
 
-class OpenChatsScreen extends StatelessWidget {
+class OpenChatsScreen extends StatefulWidget {
   const OpenChatsScreen({super.key});
 
   @override
+  State<OpenChatsScreen> createState() => _OpenChatsScreenState();
+}
+
+class _OpenChatsScreenState extends State<OpenChatsScreen> {
+  late final Future<List<_ChatPreview>> _chatsFuture;
+
+  @override
+  void initState() {
+    super.initState();
+    _chatsFuture = _loadChats();
+  }
+
+  Future<List<_ChatPreview>> _loadChats() async {
+    final repository = ChatRepositoryFactory.create();
+    final threads = await repository.listThreads();
+    final chats = <_ChatPreview>[];
+
+    for (final thread in threads) {
+      final messages = await repository.loadMessages(thread.id);
+      final hasMessages = messages.isNotEmpty;
+      final isUsersTurn = hasMessages ? !messages.last.isMe : false;
+      chats.add(
+        _ChatPreview(
+          id: thread.id,
+          name: thread.displayName,
+          age: thread.displayAge,
+          lockState: thread.isLocked ? _ChatLockState.locked : _ChatLockState.ready,
+          lastMessage: thread.lastMessagePreview.trim().isEmpty
+              ? (hasMessages ? messages.last.body : null)
+              : thread.lastMessagePreview,
+          time: _timeLabelFor(thread),
+          progress: thread.unlockProgress,
+          isUsersTurn: isUsersTurn,
+        ),
+      );
+    }
+
+    return chats;
+  }
+
+  String _timeLabelFor(ChatThread thread) {
+    const localDemoLabels = {
+      'jonas-24': '12:41',
+      'magnus-22': 'i går',
+      'oscar-25': 'man.',
+      'sara-23': 'søn.',
+    };
+    if (localDemoLabels.containsKey(thread.id)) {
+      return localDemoLabels[thread.id]!;
+    }
+
+    final now = DateTime.now();
+    final date = thread.lastMessageAt;
+    final isSameDay = now.year == date.year && now.month == date.month && now.day == date.day;
+    if (isSameDay) {
+      final hours = date.hour.toString().padLeft(2, '0');
+      final minutes = date.minute.toString().padLeft(2, '0');
+      return '$hours:$minutes';
+    }
+
+    final yesterday = now.subtract(const Duration(days: 1));
+    final isYesterday = yesterday.year == date.year &&
+        yesterday.month == date.month &&
+        yesterday.day == date.day;
+    if (isYesterday) {
+      return 'i går';
+    }
+
+    const weekday = {
+      DateTime.monday: 'man.',
+      DateTime.tuesday: 'tir.',
+      DateTime.wednesday: 'ons.',
+      DateTime.thursday: 'tor.',
+      DateTime.friday: 'fre.',
+      DateTime.saturday: 'lør.',
+      DateTime.sunday: 'søn.',
+    };
+
+    return weekday[date.weekday] ?? '';
+  }
+
+  @override
   Widget build(BuildContext context) {
-    String? lastMessageFor(String chatId) {
-      final messages = chatConversations[chatId]?.messages;
-      if (messages == null || messages.isEmpty) {
-        return null;
-      }
-
-      final lastNonEmpty = messages.lastWhere(
-        (message) => message.text.trim().isNotEmpty,
-        orElse: () => const ChatMessage(text: '', isMe: false),
-      );
-
-      return lastNonEmpty.text.isEmpty ? null : lastNonEmpty.text;
-    }
-
-    bool isUsersTurnFor(String chatId) {
-      final messages = chatConversations[chatId]?.messages;
-      if (messages == null || messages.isEmpty) {
-        return false;
-      }
-
-      final lastNonEmpty = messages.lastWhere(
-        (message) => message.text.trim().isNotEmpty,
-        orElse: () => const ChatMessage(text: '', isMe: false),
-      );
-
-      if (lastNonEmpty.text.isEmpty) {
-        return false;
-      }
-
-      return !lastNonEmpty.isMe;
-    }
-
-    _ChatLockState lockStateFor(String chatId) {
-      final messages = chatConversations[chatId]?.messages ?? [];
-      final myCount = messages.where((message) => message.isMe).length;
-      final theirCount = messages.length - myCount;
-      return (myCount >= 10 && theirCount >= 10)
-          ? _ChatLockState.ready
-          : _ChatLockState.locked;
-    }
-
-    double progressFor(String chatId) {
-      final messages = chatConversations[chatId]?.messages ?? [];
-      final myCount = messages.where((message) => message.isMe).length;
-      final theirCount = messages.length - myCount;
-      final progress = min(myCount, theirCount) / 10;
-      return progress.clamp(0.0, 1.0);
-    }
-
-    // UI først: dummy chats
-    final chats = <_ChatPreview>[
-      _ChatPreview(
-        id: 'jonas-24',
-        name: 'Jonas',
-        age: 24,
-        lockState: lockStateFor('jonas-24'),
-        lastMessage: lastMessageFor('jonas-24'),
-        time: '12:41',
-        progress: progressFor('jonas-24'),
-        isUsersTurn: isUsersTurnFor('jonas-24'),
-      ),
-      _ChatPreview(
-        id: 'magnus-22',
-        name: 'Magnus',
-        age: 22,
-        lockState: lockStateFor('magnus-22'),
-        lastMessage: lastMessageFor('magnus-22'),
-        time: 'i går',
-        progress: progressFor('magnus-22'),
-        isUsersTurn: isUsersTurnFor('magnus-22'),
-      ),
-      _ChatPreview(
-        id: 'oscar-25',
-        name: 'Oscar',
-        age: 25,
-        lockState: lockStateFor('oscar-25'),
-        lastMessage: lastMessageFor('oscar-25'),
-        time: 'man.',
-        progress: progressFor('oscar-25'),
-        isUsersTurn: isUsersTurnFor('oscar-25'),
-      ),
-      _ChatPreview(
-        id: 'sara-23',
-        name: 'Sara',
-        age: 23,
-        lockState: lockStateFor('sara-23'),
-        lastMessage: lastMessageFor('sara-23'),
-        time: 'søn.',
-        progress: progressFor('sara-23'),
-        isUsersTurn: isUsersTurnFor('sara-23'),
-      ),
-    ];
-
     return Scaffold(
       body: Container(
         decoration: const BoxDecoration(
@@ -126,7 +116,6 @@ class OpenChatsScreen extends StatelessWidget {
                     ),
                   ),
                 ),
-                // Lille intro (calm, app-like)
                 Padding(
                   padding: const EdgeInsets.only(bottom: 10),
                   child: Text(
@@ -138,30 +127,44 @@ class OpenChatsScreen extends StatelessWidget {
                     ),
                   ),
                 ),
-
                 Expanded(
-                  child: chats.isEmpty
-                      ? const _EmptyChatsState()
-                      : ListView.separated(
-                          padding: const EdgeInsets.only(bottom: 16),
-                          itemCount: chats.length,
-                          separatorBuilder: (_, __) => const SizedBox(height: 10),
-                          itemBuilder: (context, i) {
-                            final chat = chats[i];
-                            return _ChatCard(
-                              chat: chat,
-                              onTap: () {
-                                Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder: (_) =>
-                                        SecretChatScreen(chatId: chat.id),
-                                  ),
-                                );
-                              },
-                            );
-                          },
-                        ),
+                  child: FutureBuilder<List<_ChatPreview>>(
+                    future: _chatsFuture,
+                    builder: (context, snapshot) {
+                      if (snapshot.connectionState != ConnectionState.done) {
+                        return const Center(child: CircularProgressIndicator());
+                      }
+
+                      if (snapshot.hasError) {
+                        return const _EmptyChatsState();
+                      }
+
+                      final chats = snapshot.data ?? const <_ChatPreview>[];
+                      if (chats.isEmpty) {
+                        return const _EmptyChatsState();
+                      }
+
+                      return ListView.separated(
+                        padding: const EdgeInsets.only(bottom: 16),
+                        itemCount: chats.length,
+                        separatorBuilder: (_, __) => const SizedBox(height: 10),
+                        itemBuilder: (context, i) {
+                          final chat = chats[i];
+                          return _ChatCard(
+                            chat: chat,
+                            onTap: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (_) => SecretChatScreen(chatId: chat.id),
+                                ),
+                              );
+                            },
+                          );
+                        },
+                      );
+                    },
+                  ),
                 ),
               ],
             ),
@@ -171,10 +174,6 @@ class OpenChatsScreen extends StatelessWidget {
     );
   }
 }
-
-// -------------------------
-// UI Components
-// -------------------------
 
 class _ChatCard extends StatelessWidget {
   final _ChatPreview chat;
@@ -210,10 +209,8 @@ class _ChatCard extends StatelessWidget {
           children: [
             Row(
               children: [
-                _Avatar(label: 'BD'),
+                const _Avatar(label: 'BD'),
                 const SizedBox(width: 12),
-
-                // Title + preview
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -256,9 +253,7 @@ class _ChatCard extends StatelessWidget {
                     ],
                   ),
                 ),
-
                 const SizedBox(width: 10),
-
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.end,
                   children: [
@@ -271,10 +266,7 @@ class _ChatCard extends StatelessWidget {
                 ),
               ],
             ),
-
             const SizedBox(height: 12),
-
-            // Progress bar
             ClipRRect(
               borderRadius: BorderRadius.circular(999),
               child: LinearProgressIndicator(
@@ -356,7 +348,7 @@ class _TurnIndicator extends StatelessWidget {
     return Container(
       width: 8,
       height: 8,
-      decoration: BoxDecoration(
+      decoration: const BoxDecoration(
         color: AppColors.primary,
         shape: BoxShape.circle,
       ),
@@ -387,10 +379,6 @@ class _EmptyChatsState extends StatelessWidget {
   }
 }
 
-// -------------------------
-// Model (UI dummy)
-// -------------------------
-
 enum _ChatLockState { locked, ready }
 
 class _ChatPreview {
@@ -403,7 +391,7 @@ class _ChatPreview {
   final double progress;
   final bool isUsersTurn;
 
-  _ChatPreview({
+  const _ChatPreview({
     required this.id,
     required this.name,
     required this.age,

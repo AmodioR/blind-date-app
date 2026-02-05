@@ -1,6 +1,9 @@
 import 'dart:math';
 
 import 'package:flutter/material.dart';
+
+import '../data/chat/chat_models.dart';
+import '../data/chat/chat_repository_factory.dart';
 import '../sheets/wingman_sheet.dart';
 import '../theme/app_colors.dart';
 import 'match_profile_screen.dart';
@@ -15,49 +18,52 @@ class SecretChatScreen extends StatefulWidget {
 }
 
 class _SecretChatScreenState extends State<SecretChatScreen> {
-  late final String _chatName;
-  late final int _chatAge;
-  late final List<ChatMessage> _messages;
+  final _repository = ChatRepositoryFactory.create();
+  late String _chatName;
+  late int _chatAge;
+  List<ChatMessage> _messages = const [];
+  bool _isLoading = true;
+
   final TextEditingController _textController = TextEditingController();
   final ScrollController _scrollController = ScrollController();
 
   @override
   void initState() {
     super.initState();
-    final chatData = widget.chatId == null
-        ? ChatData(
-            name: widget.title ?? 'Nyt match',
-            age: 23,
-            messages: const [],
-          )
-        : chatConversations[widget.chatId] ??
-            ChatData(
-              name: widget.title ?? 'Nyt match',
-              age: 23,
-              messages: const [
-                ChatMessage(
-                  text:
-                      'Hej 😄 Jeg synes virkelig konceptet her er fedt. Det føles meget mere ægte.',
-                  isMe: false,
-                ),
-                ChatMessage(
-                  text:
-                      'Tak! Jeg er helt enig. Det er meget rarere at lære hinanden at kende først 😊',
-                  isMe: true,
-                ),
-                ChatMessage(
-                  text: 'Helt sikkert! Hvad laver du normalt i din fritid?',
-                  isMe: false,
-                ),
-                ChatMessage(
-                  text: 'Jeg laver faktisk musik og gamer en del. Hvad med dig?',
-                  isMe: true,
-                ),
-              ],
-            );
-    _chatName = chatData.name;
-    _chatAge = chatData.age;
-    _messages = List<ChatMessage>.from(chatData.messages);
+    _chatName = widget.title ?? 'Nyt match';
+    _chatAge = 23;
+    _loadData();
+  }
+
+  Future<void> _loadData() async {
+    if (widget.chatId == null) {
+      if (!mounted) {
+        return;
+      }
+      setState(() => _isLoading = false);
+      return;
+    }
+
+    final threads = await _repository.listThreads();
+    ChatThread? thread;
+    for (final item in threads) {
+      if (item.id == widget.chatId) {
+        thread = item;
+        break;
+      }
+    }
+    final messages = await _repository.loadMessages(widget.chatId!);
+
+    if (!mounted) {
+      return;
+    }
+
+    setState(() {
+      _chatName = thread?.displayName ?? _chatName;
+      _chatAge = thread?.displayAge ?? _chatAge;
+      _messages = messages;
+      _isLoading = false;
+    });
   }
 
   @override
@@ -67,15 +73,17 @@ class _SecretChatScreenState extends State<SecretChatScreen> {
     super.dispose();
   }
 
-  void _handleSend() {
+  Future<void> _handleSend() async {
     final text = _textController.text.trim();
-    if (text.isEmpty) {
+    final matchId = widget.chatId;
+    if (text.isEmpty || matchId == null) {
       return;
     }
-    setState(() {
-      _messages.add(ChatMessage(text: text, isMe: true));
-    });
+
+    await _repository.sendMessage(matchId: matchId, body: text);
     _textController.clear();
+    await _loadData();
+
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!_scrollController.hasClients) {
         return;
@@ -129,24 +137,22 @@ class _SecretChatScreenState extends State<SecretChatScreen> {
                   ],
                 ),
               ),
-
-              // Chat list (dummy)
               Expanded(
-                child: ListView.builder(
-                  controller: _scrollController,
-                  padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
-                  itemCount: _messages.length,
-                  itemBuilder: (context, index) {
-                    final message = _messages[index];
-                    if (message.isMe) {
-                      return _MeBubble(text: message.text);
-                    }
-                    return _OtherBubble(text: message.text);
-                  },
-                ),
+                child: _isLoading
+                    ? const Center(child: CircularProgressIndicator())
+                    : ListView.builder(
+                        controller: _scrollController,
+                        padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
+                        itemCount: _messages.length,
+                        itemBuilder: (context, index) {
+                          final message = _messages[index];
+                          if (message.isMe) {
+                            return _MeBubble(text: message.body);
+                          }
+                          return _OtherBubble(text: message.body);
+                        },
+                      ),
               ),
-
-              // Input bar + Wingman hand
               Padding(
                 padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
                 child: Row(
@@ -177,7 +183,7 @@ class _SecretChatScreenState extends State<SecretChatScreen> {
                     InkWell(
                       borderRadius: BorderRadius.circular(14),
                       onTap: () {
-                        showModalBottomSheet(
+                        showModalBottomSheet<void>(
                           context: context,
                           shape: const RoundedRectangleBorder(
                             borderRadius:
@@ -255,171 +261,6 @@ class _SecretChatScreenState extends State<SecretChatScreen> {
     );
   }
 }
-
-class ChatData {
-  final String name;
-  final int age;
-  final List<ChatMessage> messages;
-
-  const ChatData({
-    required this.name,
-    required this.age,
-    required this.messages,
-  });
-}
-
-class ChatMessage {
-  final String text;
-  final bool isMe;
-
-  const ChatMessage({
-    required this.text,
-    required this.isMe,
-  });
-}
-
-const Map<String, ChatData> chatConversations = {
-  'jonas-24': ChatData(
-    name: 'Jonas',
-    age: 24,
-    messages: const [
-      ChatMessage(
-        text: 'Godmorgen! Har du fået din kaffe endnu?',
-        isMe: false,
-      ),
-      ChatMessage(
-        text: 'Ja! Og jeg prøver en ny bønne i dag ☕️',
-        isMe: true,
-      ),
-      ChatMessage(
-        text: 'Nice, jeg er mere te-person. Hvad er dit go-to humørboost?',
-        isMe: false,
-      ),
-    ],
-  ),
-  'magnus-22': ChatData(
-    name: 'Magnus',
-    age: 22,
-    messages: const [
-      ChatMessage(
-        text: 'Godmorgen, sovet godt?',
-        isMe: false,
-      ),
-      ChatMessage(
-        text: 'Ja, helt roligt i nat.',
-        isMe: true,
-      ),
-      ChatMessage(
-        text: 'Hvad skal din dag?',
-        isMe: false,
-      ),
-      ChatMessage(
-        text: 'Arbejde og lidt træning.',
-        isMe: true,
-      ),
-      ChatMessage(
-        text: 'Lyder fint. Hvilken træning?',
-        isMe: false,
-      ),
-      ChatMessage(
-        text: 'En kort løbetur.',
-        isMe: true,
-      ),
-      ChatMessage(
-        text: 'Jeg går en tur senere.',
-        isMe: false,
-      ),
-      ChatMessage(
-        text: 'Det gør godt.',
-        isMe: true,
-      ),
-      ChatMessage(
-        text: 'Har du frokostplaner?',
-        isMe: false,
-      ),
-      ChatMessage(
-        text: 'Salat og kaffe.',
-        isMe: true,
-      ),
-      ChatMessage(
-        text: 'Kaffe er altid godt.',
-        isMe: false,
-      ),
-      ChatMessage(
-        text: 'Helt enig.',
-        isMe: true,
-      ),
-      ChatMessage(
-        text: 'Hvilken musik nu?',
-        isMe: false,
-      ),
-      ChatMessage(
-        text: 'Rolig indie i dag.',
-        isMe: true,
-      ),
-      ChatMessage(
-        text: 'Det passer til vejret.',
-        isMe: false,
-      ),
-      ChatMessage(
-        text: 'Ja, det gør.',
-        isMe: true,
-      ),
-      ChatMessage(
-        text: 'Skal vi lave playlisten?',
-        isMe: false,
-      ),
-      ChatMessage(
-        text: 'Gerne, send dine favoritter.',
-        isMe: true,
-      ),
-      ChatMessage(
-        text: 'Jeg sender et par.',
-        isMe: false,
-      ),
-      ChatMessage(
-        text: 'Fedt, jeg glæder mig.',
-        isMe: true,
-      ),
-    ],
-  ),
-  'oscar-25': ChatData(
-    name: 'Oscar',
-    age: 25,
-    messages: const [
-      ChatMessage(
-        text: 'Jeg tror vi ville være gode til at rejse sammen.',
-        isMe: false,
-      ),
-      ChatMessage(
-        text: 'Helt enig! Hvad er dit næste drømmerejsemål?',
-        isMe: true,
-      ),
-      ChatMessage(
-        text: 'Japan. Street food + neon. Hvordan med dig?',
-        isMe: false,
-      ),
-    ],
-  ),
-  'sara-23': ChatData(
-    name: 'Sara',
-    age: 23,
-    messages: const [
-      ChatMessage(
-        text: 'Hej! Jeg kan se vi begge elsker brunch.',
-        isMe: false,
-      ),
-      ChatMessage(
-        text: 'Det er mit yndlingsmåltid. Har du et favoritsted?',
-        isMe: true,
-      ),
-      ChatMessage(
-        text: 'Jeg har en lille café jeg elsker. Vil du have navnet?',
-        isMe: false,
-      ),
-    ],
-  ),
-};
 
 class _MeBubble extends StatelessWidget {
   final String text;
