@@ -27,9 +27,9 @@ class _LandingScreenState extends State<LandingScreen> {
     BuildContext context, {
     required bool shouldCreateUser,
   }) async {
-    final controller = TextEditingController();
+    final emailController = TextEditingController();
+    final passwordController = TextEditingController();
     bool isSending = false;
-    bool isSent = false;
 
     await showModalBottomSheet<void>(
       context: context,
@@ -42,11 +42,18 @@ class _LandingScreenState extends State<LandingScreen> {
         return StatefulBuilder(
           builder: (context, setSheetState) {
             Future<void> submit() async {
-              if (isSending || isSent) return;
-              final email = controller.text.trim();
+              if (isSending) return;
+              final email = emailController.text.trim();
+              final password = passwordController.text;
               if (email.isEmpty || !email.contains('@')) {
                 ScaffoldMessenger.of(sheetContext).showSnackBar(
                   const SnackBar(content: Text('Indtast en gyldig email.')),
+                );
+                return;
+              }
+              if (password.trim().isEmpty) {
+                ScaffoldMessenger.of(sheetContext).showSnackBar(
+                  const SnackBar(content: Text('Indtast en adgangskode.')),
                 );
                 return;
               }
@@ -54,17 +61,29 @@ class _LandingScreenState extends State<LandingScreen> {
                 isSending = true;
               });
               try {
-                await Supabase.instance.client.auth.signInWithOtp(
-                  email: email,
-                  shouldCreateUser: shouldCreateUser,
-                );
-                setSheetState(() {
-                  isSent = true;
-                });
-              } on AuthException catch (error) {
+                if (shouldCreateUser) {
+                  await Supabase.instance.client.auth.signUp(
+                    email: email,
+                    password: password,
+                  );
+                } else {
+                  await Supabase.instance.client.auth.signInWithPassword(
+                    email: email,
+                    password: password,
+                  );
+                }
+                if (!sheetContext.mounted) return;
+                Navigator.of(sheetContext).pop();
+              } on AuthException {
                 if (!sheetContext.mounted) return;
                 ScaffoldMessenger.of(sheetContext).showSnackBar(
-                  SnackBar(content: Text(error.message)),
+                  SnackBar(
+                    content: Text(
+                      shouldCreateUser
+                          ? 'Kunne ikke oprette konto'
+                          : 'Forkert email eller adgangskode',
+                    ),
+                  ),
                 );
               } catch (_) {
                 if (!sheetContext.mounted) return;
@@ -93,40 +112,42 @@ class _LandingScreenState extends State<LandingScreen> {
                     ),
                   ),
                   const SizedBox(height: 12),
-                  if (!isSent)
-                    TextField(
-                      controller: controller,
-                      keyboardType: TextInputType.emailAddress,
-                      decoration: const InputDecoration(
-                        labelText: 'Email',
-                        border: OutlineInputBorder(),
-                      ),
-                    )
-                  else
-                    const Text(
-                      'Tjek din email for linket.',
-                      style: TextStyle(fontSize: 16),
+                  TextField(
+                    controller: emailController,
+                    keyboardType: TextInputType.emailAddress,
+                    decoration: const InputDecoration(
+                      labelText: 'Email',
+                      border: OutlineInputBorder(),
                     ),
+                  ),
+                  const SizedBox(height: 12),
+                  TextField(
+                    controller: passwordController,
+                    obscureText: true,
+                    decoration: const InputDecoration(
+                      labelText: 'Adgangskode',
+                      border: OutlineInputBorder(),
+                    ),
+                  ),
                   const SizedBox(height: 16),
-                  if (!isSent)
-                    ElevatedButton(
-                      onPressed: isSending ? null : submit,
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: AppColors.primary,
-                        padding: const EdgeInsets.symmetric(vertical: 14),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(18),
-                        ),
-                      ),
-                      child: Text(
-                        isSending ? 'Sender...' : 'Send link',
-                        style: const TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w600,
-                          color: Colors.white,
-                        ),
+                  ElevatedButton(
+                    onPressed: isSending ? null : submit,
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: AppColors.primary,
+                      padding: const EdgeInsets.symmetric(vertical: 14),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(18),
                       ),
                     ),
+                    child: Text(
+                      isSending ? 'Arbejder...' : 'Fortsæt',
+                      style: const TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w600,
+                        color: Colors.white,
+                      ),
+                    ),
+                  ),
                 ],
               ),
             );
@@ -135,7 +156,8 @@ class _LandingScreenState extends State<LandingScreen> {
       },
     );
 
-    controller.dispose();
+    emailController.dispose();
+    passwordController.dispose();
   }
 
   @override
