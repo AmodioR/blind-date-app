@@ -7,6 +7,7 @@ class LocalProfileRepository implements ProfileRepository {
   static const nameKey = 'enroll_name';
   static const ageKey = 'enroll_age';
   static const locationKey = 'enroll_location';
+  static const genderKey = 'enroll_gender';
   static const genderPreferenceKey = 'enroll_gender_preference';
   static const ageRangeMinKey = 'enroll_age_range_min';
   static const ageRangeMaxKey = 'enroll_age_range_max';
@@ -18,6 +19,7 @@ class LocalProfileRepository implements ProfileRepository {
     final name = prefs.getString(nameKey);
     final age = prefs.getInt(ageKey);
     final location = prefs.getString(locationKey);
+    final gender = prefs.getString(genderKey);
     final genderPreference = prefs.getString(genderPreferenceKey);
     final ageRangeMin = prefs.getInt(ageRangeMinKey);
     final ageRangeMax = prefs.getInt(ageRangeMaxKey);
@@ -26,6 +28,7 @@ class LocalProfileRepository implements ProfileRepository {
     if (name == null &&
         age == null &&
         location == null &&
+        gender == null &&
         genderPreference == null &&
         ageRangeMin == null &&
         ageRangeMax == null &&
@@ -37,6 +40,7 @@ class LocalProfileRepository implements ProfileRepository {
       name: name ?? '',
       age: age ?? 0,
       location: location ?? '',
+      gender: gender,
       genderPreference: genderPreference ?? 'Alle',
       ageRangeMin: ageRangeMin ?? 24,
       ageRangeMax: ageRangeMax ?? 36,
@@ -62,6 +66,11 @@ class LocalProfileRepository implements ProfileRepository {
     } else {
       await prefs.setString(locationKey, profile.location.trim());
     }
+    if (profile.gender == null || profile.gender!.trim().isEmpty) {
+      await prefs.remove(genderKey);
+    } else {
+      await prefs.setString(genderKey, profile.gender!.trim());
+    }
     await prefs.setString(genderPreferenceKey, profile.genderPreference);
     await prefs.setInt(ageRangeMinKey, profile.ageRangeMin);
     await prefs.setInt(ageRangeMaxKey, profile.ageRangeMax);
@@ -74,6 +83,7 @@ class LocalProfileRepository implements ProfileRepository {
     await prefs.remove(nameKey);
     await prefs.remove(ageKey);
     await prefs.remove(locationKey);
+    await prefs.remove(genderKey);
     await prefs.remove(genderPreferenceKey);
     await prefs.remove(ageRangeMinKey);
     await prefs.remove(ageRangeMaxKey);

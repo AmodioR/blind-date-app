@@ -20,6 +20,7 @@ class _AccountScreenState extends State<AccountScreen> {
   final TextEditingController _nameController = TextEditingController();
   final TextEditingController _ageController = TextEditingController();
 
+  String? _selectedOwnGender;
   String _selectedGender = 'Alle';
   RangeValues _ageRange = const RangeValues(24, 36);
   double _distance = 25;
@@ -27,6 +28,7 @@ class _AccountScreenState extends State<AccountScreen> {
   String _initialName = 'Sofia';
   String _initialAge = '28';
   String _initialLocation = '';
+  String? _initialOwnGender;
   String _initialGender = 'Alle';
   RangeValues _initialAgeRange = const RangeValues(24, 36);
   double _initialDistance = 25;
@@ -61,6 +63,8 @@ class _AccountScreenState extends State<AccountScreen> {
       if (profile.location.isNotEmpty) {
         _initialLocation = profile.location;
       }
+      _initialOwnGender = profile.gender;
+      _selectedOwnGender = profile.gender;
       if (profile.genderPreference.isNotEmpty) {
         _initialGender = profile.genderPreference;
         _selectedGender = profile.genderPreference;
@@ -85,6 +89,7 @@ class _AccountScreenState extends State<AccountScreen> {
   bool get _hasChanges {
     return _nameController.text.trim() != _initialName ||
         _ageController.text.trim() != _initialAge ||
+        _selectedOwnGender != _initialOwnGender ||
         _selectedGender != _initialGender ||
         _ageRange.start != _initialAgeRange.start ||
         _ageRange.end != _initialAgeRange.end ||
@@ -102,6 +107,7 @@ class _AccountScreenState extends State<AccountScreen> {
         name: name,
         age: age,
         location: _initialLocation,
+        gender: _selectedOwnGender,
         genderPreference: _selectedGender,
         ageRangeMin: _ageRange.start.round(),
         ageRangeMax: _ageRange.end.round(),
@@ -111,6 +117,7 @@ class _AccountScreenState extends State<AccountScreen> {
     setState(() {
       _initialName = name;
       _initialAge = age > 0 ? age.toString() : '';
+      _initialOwnGender = _selectedOwnGender;
       _initialGender = _selectedGender;
       _initialAgeRange = _ageRange;
       _initialDistance = _distance;
@@ -338,6 +345,53 @@ class _AccountScreenState extends State<AccountScreen> {
                                     ),
                                   ),
                                 ],
+                              ),
+                              const SizedBox(height: 18),
+                              const Divider(height: 1, color: AppColors.border),
+                              const SizedBox(height: 18),
+                              Text(
+                                'Dit køn',
+                                style: TextStyle(
+                                  fontSize: 13,
+                                  color: AppColors.textMuted,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                              const SizedBox(height: 12),
+                              Wrap(
+                                spacing: 10,
+                                runSpacing: 8,
+                                children: ['Mand', 'Kvinde']
+                                    .map(
+                                      (option) => ChoiceChip(
+                                        label: Text(option),
+                                        selected: _selectedOwnGender == option,
+                                        onSelected: (_) {
+                                          setState(() {
+                                            _selectedOwnGender = option;
+                                          });
+                                        },
+                                        selectedColor: AppColors.primary
+                                            .withOpacity(0.15),
+                                        backgroundColor: AppColors.surfaceTint,
+                                        labelStyle: TextStyle(
+                                          color: _selectedOwnGender == option
+                                              ? AppColors.primaryDeep
+                                              : AppColors.textSoft,
+                                          fontWeight: FontWeight.w600,
+                                        ),
+                                        shape: RoundedRectangleBorder(
+                                          borderRadius:
+                                              BorderRadius.circular(12),
+                                          side: BorderSide(
+                                            color: _selectedOwnGender == option
+                                                ? AppColors.primary
+                                                : AppColors.border,
+                                          ),
+                                        ),
+                                      ),
+                                    )
+                                    .toList(),
                               ),
                             ],
                           ),
