@@ -18,7 +18,7 @@ class RemoteProfileRepository implements ProfileRepository {
     final data = await client
         .from(_tableName)
         .select('name, age, location, gender, gender_preference, age_range_min, age_range_max, distance_km')
-        .eq('id', user.id)
+        .filter('id', 'eq', user.id)
         .maybeSingle();
 
     if (data == null) {
@@ -71,6 +71,6 @@ class RemoteProfileRepository implements ProfileRepository {
       return;
     }
 
-    await client.from(_tableName).delete().eq('id', user.id);
+    await client.from(_tableName).delete().filter('id', 'eq', user.id);
   }
 }

@@ -38,7 +38,7 @@ class RemoteChatRepository implements ChatRepository {
       final profileRow = await client
           .from('profiles')
           .select('name, age')
-          .eq('id', otherUserId)
+          .filter('id', 'eq', otherUserId)
           .maybeSingle();
 
       final profileName = profileRow?['name']?.toString().trim();
@@ -50,14 +50,14 @@ class RemoteChatRepository implements ChatRepository {
       final lastMessageRows = await client
           .from(_messagesTable)
           .select('body, created_at, sender_id')
-          .eq('match_id', matchId)
+          .filter('match_id', 'eq', matchId)
           .order('created_at', ascending: false)
           .limit(1);
 
       final messageSenders = await client
           .from(_messagesTable)
           .select('sender_id')
-          .eq('match_id', matchId);
+          .filter('match_id', 'eq', matchId);
 
       var myCount = 0;
       var theirCount = 0;
@@ -116,7 +116,7 @@ class RemoteChatRepository implements ChatRepository {
     final rows = await client
         .from(_messagesTable)
         .select('id, match_id, sender_id, body, created_at')
-        .eq('match_id', matchId)
+        .filter('match_id', 'eq', matchId)
         .order('created_at', ascending: true);
 
     return rows
