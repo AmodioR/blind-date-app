@@ -24,6 +24,7 @@ class _SecretChatScreenState extends State<SecretChatScreen> {
   final _repository = ChatRepositoryFactory.create();
   late String _chatName;
   late int _chatAge;
+  bool _isLoadingRemoteProfile = false;
   List<ChatMessage> _messages = const [];
   final Set<String> _optimisticMessageKeys = <String>{};
   bool _isLoading = true;
@@ -70,7 +71,74 @@ class _SecretChatScreenState extends State<SecretChatScreen> {
       _isLoading = false;
     });
 
+    await _loadRemoteMatchProfile(matchId: widget.chatId!);
+
     _subscribeToMatchMessages(matchId: widget.chatId!);
+  }
+
+  Future<void> _loadRemoteMatchProfile({required String matchId}) async {
+    if (!AppConfig.useRemoteChat || !SupabaseConfig.isConfigured) {
+      return;
+    }
+
+    final client = Supabase.instance.client;
+    final currentUserId = client.auth.currentUser?.id;
+    if (currentUserId == null) {
+      return;
+    }
+
+    if (mounted) {
+      setState(() => _isLoadingRemoteProfile = true);
+    }
+
+    try {
+      final matchRow = await client
+          .from('matches')
+          .select('user_a, user_b')
+          .eq('id', matchId)
+          .maybeSingle();
+      if (matchRow == null) {
+        return;
+      }
+
+      final userA = matchRow['user_a']?.toString();
+      final userB = matchRow['user_b']?.toString();
+      if (userA == null || userB == null) {
+        return;
+      }
+
+      final otherUserId = currentUserId == userA ? userB : userA;
+
+      final profileRow = await client
+          .from('profiles')
+          .select('name, age')
+          .eq('id', otherUserId)
+          .maybeSingle();
+      if (profileRow == null || !mounted) {
+        return;
+      }
+
+      final profileName = profileRow['name']?.toString().trim();
+      final profileAge = profileRow['age'];
+      final parsedAge = profileAge is int
+          ? profileAge
+          : int.tryParse(profileAge?.toString() ?? '');
+
+      setState(() {
+        if (profileName != null && profileName.isNotEmpty) {
+          _chatName = profileName;
+        }
+        if (parsedAge != null) {
+          _chatAge = parsedAge;
+        }
+      });
+    } catch (_) {
+      // Keep fallback title/age if remote profile loading fails.
+    } finally {
+      if (mounted) {
+        setState(() => _isLoadingRemoteProfile = false);
+      }
+    }
   }
 
   void _subscribeToMatchMessages({required String matchId}) {
@@ -211,11 +279,13 @@ class _SecretChatScreenState extends State<SecretChatScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final myCount = _messages.where((message) => message.isMe).length;
-    final theirCount = _messages.where((message) => !message.isMe).length;
+    final currentUserId = ChatMessage.currentUserId;
+    final myCount = _messages.where((message) => message.senderId == currentUserId).length;
+    final theirCount = _messages.where((message) => message.senderId != currentUserId).length;
     final progress = min(myCount, theirCount) / 10;
     final clampedProgress = progress.clamp(0.0, 1.0);
     final statusText = clampedProgress >= 1.0 ? 'Klar' : 'Låst';
+    final headerTitle = _isLoadingRemoteProfile ? '…' : '$_chatName, $_chatAge';
 
     return Scaffold(
       body: Stack(
@@ -337,7 +407,7 @@ class _SecretChatScreenState extends State<SecretChatScreen> {
                       ),
                     ),
                     Text(
-                      '$_chatName, $_chatAge',
+                      headerTitle,
                       style: const TextStyle(
                         fontSize: 26,
                         fontWeight: FontWeight.w800,
