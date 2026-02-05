@@ -27,7 +27,7 @@ class _SecretChatScreenState extends State<SecretChatScreen> {
   List<ChatMessage> _messages = const [];
   final Set<String> _optimisticMessageKeys = <String>{};
   bool _isLoading = true;
-  RealtimeChannel? _messagesChannel;
+  RealtimeChannel? _channel;
 
   final TextEditingController _textController = TextEditingController();
   final ScrollController _scrollController = ScrollController();
@@ -74,7 +74,7 @@ class _SecretChatScreenState extends State<SecretChatScreen> {
   }
 
   void _subscribeToMatchMessages({required String matchId}) {
-    if (_messagesChannel != null ||
+    if (_channel != null ||
         !AppConfig.useRemoteChat ||
         !SupabaseConfig.isConfigured) {
       return;
@@ -89,7 +89,7 @@ class _SecretChatScreenState extends State<SecretChatScreen> {
 
     ChatMessage.currentUserId = user.id;
 
-    _messagesChannel = client
+    _channel = client
         .channel('messages:$matchId')
         .onPostgresChanges(
           event: PostgresChangeEvent.insert,
@@ -111,14 +111,14 @@ class _SecretChatScreenState extends State<SecretChatScreen> {
                   DateTime.now(),
             );
 
+            if (_messages.any((message) => message.id == realtimeMessage.id)) {
+              return;
+            }
+
             final optimisticKey =
                 _messageKey(senderId: realtimeMessage.senderId, body: realtimeMessage.body);
             if (realtimeMessage.senderId == ChatMessage.currentUserId &&
                 _optimisticMessageKeys.remove(optimisticKey)) {
-              return;
-            }
-
-            if (_messages.any((message) => message.id == realtimeMessage.id)) {
               return;
             }
 
@@ -172,10 +172,9 @@ class _SecretChatScreenState extends State<SecretChatScreen> {
 
   @override
   void dispose() {
-    final channel = _messagesChannel;
-    if (channel != null) {
-      Supabase.instance.client.removeChannel(channel);
-      _messagesChannel = null;
+    if (_channel != null) {
+      Supabase.instance.client.removeChannel(_channel!);
+      _channel = null;
     }
     _textController.dispose();
     _scrollController.dispose();
