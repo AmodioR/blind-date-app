@@ -28,49 +28,69 @@ class RemoteMatchmakingRepository implements MatchmakingRepository {
       return null;
     }
 
-    var candidateQuery = client
+    final rawCandidates = await client
         .from(_profilesTable)
-        .or('and(id.neq.${user.id},gender.not.is.null,age.not.is.null)')
-        .gte('age', ageRangeMin)
-        .lte('age', ageRangeMax);
-
-    if (genderPreference != 'Alle') {
-      candidateQuery = candidateQuery.eq('gender', genderPreference);
-    }
-
-    final candidates = await candidateQuery
-        .select('id, gender, age')
+        .select('id, age, gender')
         .order('updated_at', ascending: false)
-        .limit(20);
+        .limit(100);
 
-    for (final candidate in candidates) {
-      final candidateId = candidate['id']?.toString();
-      if (candidateId == null || candidateId.isEmpty) {
+    final existingMatches = await client
+        .from(_matchesTable)
+        .select('user_a, user_b')
+        .or('user_a.eq.${user.id},user_b.eq.${user.id}');
+
+    final matchedUserIds = <String>{};
+    for (final match in existingMatches) {
+      final userA = match['user_a']?.toString();
+      final userB = match['user_b']?.toString();
+
+      if (userA == null || userB == null) {
         continue;
       }
 
-      final existingMatches = await client
-          .from(_matchesTable)
-          .select('id')
-          .or(
-            'and(user_a.eq.${user.id},user_b.eq.$candidateId),'
-            'and(user_b.eq.${user.id},user_a.eq.$candidateId)',
-          )
-          .limit(1);
-
-      if (existingMatches.isNotEmpty) {
-        continue;
+      if (userA == user.id) {
+        matchedUserIds.add(userB);
+      } else if (userB == user.id) {
+        matchedUserIds.add(userA);
       }
-
-      final inserted = await client
-          .from(_matchesTable)
-          .insert({'user_a': user.id, 'user_b': candidateId})
-          .select('id')
-          .single();
-
-      return inserted['id']?.toString();
     }
 
-    return null;
+    String? candidateId;
+    for (final candidate in rawCandidates) {
+      final id = candidate['id']?.toString();
+      final age = candidate['age'] as int?;
+      final gender = candidate['gender']?.toString();
+
+      if (id == null || id.isEmpty || id == user.id) {
+        continue;
+      }
+      if (age == null || gender == null || gender.isEmpty) {
+        continue;
+      }
+      if (age < ageRangeMin || age > ageRangeMax) {
+        continue;
+      }
+      if (genderPreference != 'Alle' && gender != genderPreference) {
+        continue;
+      }
+      if (matchedUserIds.contains(id)) {
+        continue;
+      }
+
+      candidateId = id;
+      break;
+    }
+
+    if (candidateId == null) {
+      return null;
+    }
+
+    final inserted = await client
+        .from(_matchesTable)
+        .insert({'user_a': user.id, 'user_b': candidateId})
+        .select('id')
+        .single();
+
+    return inserted['id']?.toString();
   }
 }
