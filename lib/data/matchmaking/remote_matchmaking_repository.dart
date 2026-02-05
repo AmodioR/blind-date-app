@@ -4,11 +4,41 @@ import '../profile/profile_repository_factory.dart';
 import 'matchmaking_repository.dart';
 
 class RemoteMatchmakingRepository implements MatchmakingRepository {
-  static const _profilesTable = 'profiles';
-  static const _matchesTable = 'matches';
+  static const _matchmakingQueueTable = 'matchmaking_queue';
 
   @override
-  Future<String?> findBlindDateMatchId() async {
+  Future<void> setSearching({required bool active}) async {
+    final client = Supabase.instance.client;
+    final session = client.auth.currentSession;
+    final user = client.auth.currentUser;
+    if (session == null || user == null) {
+      return;
+    }
+
+    final profile = await ProfileRepositoryFactory.create().loadProfile();
+    if (profile == null) {
+      return;
+    }
+
+    final genderPreference = profile.genderPreference.trim();
+    final ageRangeMin = profile.ageRangeMin;
+    final ageRangeMax = profile.ageRangeMax;
+
+    await client.from(_matchmakingQueueTable).upsert(
+      {
+        'user_id': user.id,
+        'gender_preference': genderPreference,
+        'age_range_min': ageRangeMin,
+        'age_range_max': ageRangeMax,
+        'active': active,
+        'updated_at': DateTime.now().toUtc().toIso8601String(),
+      },
+      onConflict: 'user_id',
+    );
+  }
+
+  @override
+  Future<String?> tryFindMatch() async {
     final client = Supabase.instance.client;
     final session = client.auth.currentSession;
     final user = client.auth.currentUser;
@@ -16,81 +46,21 @@ class RemoteMatchmakingRepository implements MatchmakingRepository {
       return null;
     }
 
-    final profile = await ProfileRepositoryFactory.create().loadProfile();
-    if (profile == null) {
+    final result = await client.rpc('try_matchmake');
+    if (result == null) {
       return null;
     }
 
-    final ageRangeMin = profile.ageRangeMin;
-    final ageRangeMax = profile.ageRangeMax;
-    final genderPreference = profile.genderPreference.trim();
-    if (ageRangeMin <= 0 || ageRangeMax <= 0 || genderPreference.isEmpty) {
-      return null;
+    if (result is String && result.isNotEmpty) {
+      return result;
     }
 
-    final rawCandidates = await client
-        .from(_profilesTable)
-        .select('id, age, gender')
-        .order('updated_at', ascending: false)
-        .limit(100);
+    return result.toString();
+  }
 
-    final existingMatches = await client
-        .from(_matchesTable)
-        .select('user_a, user_b')
-        .or('user_a.eq.${user.id},user_b.eq.${user.id}');
-
-    final matchedUserIds = <String>{};
-    for (final match in existingMatches) {
-      final userA = match['user_a']?.toString();
-      final userB = match['user_b']?.toString();
-
-      if (userA == null || userB == null) {
-        continue;
-      }
-
-      if (userA == user.id) {
-        matchedUserIds.add(userB);
-      } else if (userB == user.id) {
-        matchedUserIds.add(userA);
-      }
-    }
-
-    String? candidateId;
-    for (final candidate in rawCandidates) {
-      final id = candidate['id']?.toString();
-      final age = candidate['age'] as int?;
-      final gender = candidate['gender']?.toString();
-
-      if (id == null || id.isEmpty || id == user.id) {
-        continue;
-      }
-      if (age == null || gender == null || gender.isEmpty) {
-        continue;
-      }
-      if (age < ageRangeMin || age > ageRangeMax) {
-        continue;
-      }
-      if (genderPreference != 'Alle' && gender != genderPreference) {
-        continue;
-      }
-      if (matchedUserIds.contains(id)) {
-        continue;
-      }
-
-      candidateId = id;
-      break;
-    }
-
-    if (candidateId == null) {
-      return null;
-    }
-
-    final inserted = await client
-        .from(_matchesTable)
-        .insert({'user_a': user.id, 'user_b': candidateId})
-        .select('id')
-        .single();
-
-    return inserted['id']?.toString();
+  @override
+  Future<String?> findBlindDateMatchId() async {
+    await setSearching(active: true);
+    return tryFindMatch();
   }
 }
