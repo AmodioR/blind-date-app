@@ -1,11 +1,36 @@
 import 'package:flutter/material.dart';
+import '../data/matchmaking/matchmaking_repository_factory.dart';
+import '../theme/app_colors.dart';
 import 'secret_chat_screen.dart';
 import 'wingman_screen.dart';
-import '../theme/app_colors.dart';
-
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
+
+  Future<void> _findBlindDate(BuildContext context) async {
+    final matchId =
+        await MatchmakingRepositoryFactory.create().findBlindDateMatchId();
+
+    if (!context.mounted) {
+      return;
+    }
+
+    if (matchId != null) {
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (_) => SecretChatScreen(chatId: matchId, title: 'Nyt match'),
+        ),
+      );
+      return;
+    }
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('Ingen matches lige nu – prøv igen senere'),
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -168,15 +193,7 @@ body: Container(
                             const SizedBox(height: 14),
                             // Main action area
                             ElevatedButton(
-                              onPressed: () {
-                                Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder: (_) => const SecretChatScreen(
-                                        title: 'Nyt match'),
-                                  ),
-                                );
-                              },
+                              onPressed: () => _findBlindDate(context),
                               style: ElevatedButton.styleFrom(
                                 backgroundColor: AppColors.primary,
                                 padding:
