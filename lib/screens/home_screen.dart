@@ -19,7 +19,7 @@ class HomeScreen extends StatelessWidget {
       Navigator.push(
         context,
         MaterialPageRoute(
-          builder: (_) => SecretChatScreen(matchId: matchId, title: 'Nyt match'),
+          builder: (_) => SecretChatScreen(chatId: matchId, title: 'Nyt match'),
         ),
       );
       return;
