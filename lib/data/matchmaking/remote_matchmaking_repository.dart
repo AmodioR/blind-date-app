@@ -30,7 +30,7 @@ class RemoteMatchmakingRepository implements MatchmakingRepository {
 
     var candidateQuery = client
         .from(_profilesTable)
-        .neq('id', user.id)
+        .not('id', 'eq', user.id)
         .not('gender', 'is', null)
         .not('age', 'is', null)
         .gte('age', ageRangeMin)
