@@ -95,7 +95,7 @@ class _SecretChatScreenState extends State<SecretChatScreen> {
       final matchRow = await client
           .from('matches')
           .select('user_a, user_b')
-          .eq('id', matchId)
+          .filter('id', 'eq', matchId)
           .maybeSingle();
       if (matchRow == null) {
         return;
@@ -112,7 +112,7 @@ class _SecretChatScreenState extends State<SecretChatScreen> {
       final profileRow = await client
           .from('profiles')
           .select('name, age')
-          .eq('id', otherUserId)
+          .filter('id', 'eq', otherUserId)
           .maybeSingle();
       if (profileRow == null || !mounted) {
         return;

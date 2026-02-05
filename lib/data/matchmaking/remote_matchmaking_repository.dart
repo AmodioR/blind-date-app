@@ -40,7 +40,7 @@ class RemoteMatchmakingRepository implements MatchmakingRepository {
         .limit(20);
 
     if (genderPreference != 'Alle') {
-      candidateQuery = candidateQuery.eq('gender', genderPreference);
+      candidateQuery = candidateQuery.filter('gender', 'eq', genderPreference);
     }
 
     final candidates = await candidateQuery;
