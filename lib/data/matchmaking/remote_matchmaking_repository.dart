@@ -30,20 +30,20 @@ class RemoteMatchmakingRepository implements MatchmakingRepository {
 
     var candidateQuery = client
         .from(_profilesTable)
-        .select('id, gender, age')
         .neq('id', user.id)
         .not('gender', 'is', null)
         .not('age', 'is', null)
         .gte('age', ageRangeMin)
-        .lte('age', ageRangeMax)
-        .order('updated_at', ascending: false)
-        .limit(20);
+        .lte('age', ageRangeMax);
 
     if (genderPreference != 'Alle') {
-      candidateQuery = candidateQuery.filter('gender', 'eq', genderPreference);
+      candidateQuery = candidateQuery.eq('gender', genderPreference);
     }
 
-    final candidates = await candidateQuery;
+    final candidates = await candidateQuery
+        .select('id, gender, age')
+        .order('updated_at', ascending: false)
+        .limit(20);
 
     for (final candidate in candidates) {
       final candidateId = candidate['id']?.toString();
