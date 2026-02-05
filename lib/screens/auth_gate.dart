@@ -16,6 +16,7 @@ class AuthGate extends StatefulWidget {
 class _AuthGateState extends State<AuthGate> {
   Session? _currentSession;
   Future<Profile?>? _profileFuture;
+  _AuthDestination? _lastDestination;
 
   @override
   void initState() {
@@ -33,6 +34,7 @@ class _AuthGateState extends State<AuthGate> {
     }
     setState(() {
       _currentSession = session;
+      _lastDestination = null;
       if (session == null) {
         _profileFuture = Future.value(null);
       } else {
@@ -50,6 +52,22 @@ class _AuthGateState extends State<AuthGate> {
         return;
       }
       _updateSession(session);
+    });
+  }
+
+  void _scheduleNavigation(_AuthDestination destination, Widget screen) {
+    if (_lastDestination == destination) {
+      return;
+    }
+    _lastDestination = destination;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) {
+        return;
+      }
+      Navigator.of(context).pushAndRemoveUntil(
+        MaterialPageRoute(builder: (_) => screen),
+        (route) => route.isFirst,
+      );
     });
   }
 
@@ -73,17 +91,31 @@ class _AuthGateState extends State<AuthGate> {
                 return const _AuthLoadingScreen();
               }
               if (profileSnapshot.data == null) {
-                return const EnrollScreen();
+                _scheduleNavigation(
+                  _AuthDestination.enroll,
+                  const EnrollScreen(),
+                );
+                return const _AuthLoadingScreen();
               }
-              return const MainTabScreen();
+              _scheduleNavigation(
+                _AuthDestination.main,
+                const MainTabScreen(),
+              );
+              return const _AuthLoadingScreen();
             },
           );
         }
-        return const LandingScreen();
+        _scheduleNavigation(
+          _AuthDestination.landing,
+          const LandingScreen(),
+        );
+        return const _AuthLoadingScreen();
       },
     );
   }
 }
+
+enum _AuthDestination { landing, enroll, main }
 
 class _AuthLoadingScreen extends StatelessWidget {
   const _AuthLoadingScreen();
