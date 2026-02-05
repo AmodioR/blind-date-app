@@ -58,6 +58,31 @@ class RemoteMatchmakingRepository implements MatchmakingRepository {
     return result.toString();
   }
 
+
+  @override
+  Future<String?> getLatestMyMatchId() async {
+    final client = Supabase.instance.client;
+    final session = client.auth.currentSession;
+    final user = client.auth.currentUser;
+    if (session == null || user == null) {
+      return null;
+    }
+
+    final result = await client
+        .from('matches')
+        .select('id')
+        .or('user_a.eq.${user.id},user_b.eq.${user.id}')
+        .order('created_at', ascending: false)
+        .limit(1)
+        .maybeSingle();
+
+    final matchId = result?['id'];
+    if (matchId is String && matchId.isNotEmpty) {
+      return matchId;
+    }
+    return null;
+  }
+
   @override
   Future<String?> findBlindDateMatchId() async {
     await setSearching(active: true);

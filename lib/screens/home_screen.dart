@@ -19,6 +19,7 @@ class _HomeScreenState extends State<HomeScreen> {
   bool _isSearching = false;
   bool _isPolling = false;
   String? _searchMessage;
+  bool _hasNavigatedToMatch = false;
 
   Future<void> _toggleBlindDateSearch() async {
     if (_isSearching) {
@@ -26,9 +27,12 @@ class _HomeScreenState extends State<HomeScreen> {
       return;
     }
 
+    final initialMatchId = await _repository.getLatestMyMatchId();
+
     setState(() {
       _isSearching = true;
       _searchMessage = 'Leder efter et match…';
+      _hasNavigatedToMatch = false;
     });
 
     await _repository.setSearching(active: true);
@@ -36,7 +40,7 @@ class _HomeScreenState extends State<HomeScreen> {
       return;
     }
 
-    _startPollingLoop();
+    _startPollingLoop(initialMatchId: initialMatchId);
   }
 
   Future<void> _cancelSearch({required bool showStoppedMessage}) async {
@@ -50,6 +54,7 @@ class _HomeScreenState extends State<HomeScreen> {
       _isSearching = false;
       _isPolling = false;
       _searchMessage = null;
+      _hasNavigatedToMatch = false;
     });
 
     if (showStoppedMessage) {
@@ -59,43 +64,40 @@ class _HomeScreenState extends State<HomeScreen> {
     }
   }
 
-  Future<void> _startPollingLoop() async {
-    if (_isPolling) {
+  Future<void> _startPollingLoop({String? initialMatchId}) async {
+    if (_isPolling || _hasNavigatedToMatch) {
       return;
     }
 
     _isPolling = true;
     final startedAt = DateTime.now();
 
-    while (mounted && _isSearching) {
+    while (mounted && _isSearching && !_hasNavigatedToMatch) {
       await Future.delayed(const Duration(seconds: 2));
-      if (!mounted || !_isSearching) {
+      if (!mounted || !_isSearching || _hasNavigatedToMatch) {
         break;
       }
 
-      final matchId = await _repository.tryFindMatch();
-      if (!mounted || !_isSearching) {
+      final rpcMatchId = await _repository.tryFindMatch();
+      if (!mounted || !_isSearching || _hasNavigatedToMatch) {
         break;
       }
 
-      if (matchId != null) {
-        await _repository.setSearching(active: false);
-        if (!mounted) {
-          break;
-        }
+      if (rpcMatchId != null) {
+        await _stopSearchingAndNavigate(rpcMatchId);
+        return;
+      }
 
-        setState(() {
-          _isSearching = false;
-          _isPolling = false;
-          _searchMessage = null;
-        });
+      final latestMatchId = await _repository.getLatestMyMatchId();
+      if (!mounted || !_isSearching || _hasNavigatedToMatch) {
+        break;
+      }
 
-        await Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (_) => SecretChatScreen(chatId: matchId, title: 'Nyt match'),
-          ),
-        );
+      final hasNewMatchSinceSearchStarted =
+          latestMatchId != null && latestMatchId != initialMatchId;
+
+      if (hasNewMatchSinceSearchStarted) {
+        await _stopSearchingAndNavigate(latestMatchId);
         return;
       }
 
@@ -118,6 +120,32 @@ class _HomeScreenState extends State<HomeScreen> {
         _isPolling = false;
       });
     }
+  }
+
+  Future<void> _stopSearchingAndNavigate(String matchId) async {
+    if (_hasNavigatedToMatch) {
+      return;
+    }
+
+    _hasNavigatedToMatch = true;
+    await _repository.setSearching(active: false);
+
+    if (!mounted) {
+      return;
+    }
+
+    setState(() {
+      _isSearching = false;
+      _isPolling = false;
+      _searchMessage = null;
+    });
+
+    await Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => SecretChatScreen(chatId: matchId, title: 'Nyt match'),
+      ),
+    );
   }
 
   @override

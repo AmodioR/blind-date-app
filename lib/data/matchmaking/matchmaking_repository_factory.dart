@@ -23,6 +23,11 @@ class _DisabledMatchmakingRepository implements MatchmakingRepository {
   }
 
   @override
+  Future<String?> getLatestMyMatchId() async {
+    return null;
+  }
+
+  @override
   Future<String?> findBlindDateMatchId() async {
     return null;
   }
