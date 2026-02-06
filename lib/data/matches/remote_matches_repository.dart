@@ -26,6 +26,8 @@ class RemoteMatchesRepository {
     return MatchModel.fromDatabaseRow(row, currentUserId: user.id);
   }
 
+  Future<MatchModel?> getMatchById(String matchId) => getMatch(matchId);
+
   Stream<MatchModel?> watchMatch(String matchId) {
     final client = Supabase.instance.client;
     final user = client.auth.currentUser;
