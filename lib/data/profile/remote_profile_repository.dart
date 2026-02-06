@@ -17,7 +17,7 @@ class RemoteProfileRepository implements ProfileRepository {
 
     final data = await client
         .from(_tableName)
-        .select('name, age, location, gender, gender_preference, age_range_min, age_range_max, distance_km')
+        .select('name, age, location, gender, gender_preference, age_range_min, age_range_max, distance_km, avatar_url')
         .filter('id', 'eq', user.id)
         .maybeSingle();
 
@@ -34,6 +34,7 @@ class RemoteProfileRepository implements ProfileRepository {
       ageRangeMin: data['age_range_min'] as int? ?? 24,
       ageRangeMax: data['age_range_max'] as int? ?? 36,
       distanceKm: data['distance_km'] as int? ?? 25,
+      avatarUrl: data['avatar_url'] as String?,
     );
   }
 
@@ -58,6 +59,7 @@ class RemoteProfileRepository implements ProfileRepository {
       'age_range_min': profile.ageRangeMin,
       'age_range_max': profile.ageRangeMax,
       'distance_km': profile.distanceKm,
+      'avatar_url': profile.avatarUrl,
       'updated_at': DateTime.now().toIso8601String(),
     });
   }

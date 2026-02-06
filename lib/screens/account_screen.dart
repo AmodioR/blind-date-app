@@ -1,5 +1,8 @@
+import 'dart:typed_data';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../config/supabase_config.dart';
 import '../data/profile/profile_model.dart';
@@ -25,6 +28,9 @@ class _AccountScreenState extends State<AccountScreen> {
   RangeValues _ageRange = const RangeValues(24, 36);
   double _distance = 25;
 
+  String? _avatarUrl;
+  bool _isUploadingAvatar = false;
+
   String _initialName = 'Sofia';
   String _initialAge = '28';
   String _initialLocation = '';
@@ -32,6 +38,7 @@ class _AccountScreenState extends State<AccountScreen> {
   String _initialGender = 'Alle';
   RangeValues _initialAgeRange = const RangeValues(24, 36);
   double _initialDistance = 25;
+  String? _initialAvatarUrl;
 
   @override
   void initState() {
@@ -76,6 +83,8 @@ class _AccountScreenState extends State<AccountScreen> {
       _ageRange = _initialAgeRange;
       _initialDistance = profile.distanceKm.toDouble();
       _distance = _initialDistance;
+      _initialAvatarUrl = profile.avatarUrl;
+      _avatarUrl = profile.avatarUrl;
     });
   }
 
@@ -93,7 +102,8 @@ class _AccountScreenState extends State<AccountScreen> {
         _selectedGender != _initialGender ||
         _ageRange.start != _initialAgeRange.start ||
         _ageRange.end != _initialAgeRange.end ||
-        _distance != _initialDistance;
+        _distance != _initialDistance ||
+        _avatarUrl != _initialAvatarUrl;
   }
 
   Future<void> _saveChanges() async {
@@ -112,6 +122,7 @@ class _AccountScreenState extends State<AccountScreen> {
         ageRangeMin: _ageRange.start.round(),
         ageRangeMax: _ageRange.end.round(),
         distanceKm: _distance.round(),
+        avatarUrl: _avatarUrl,
       ),
     );
     if (!mounted) {
@@ -125,10 +136,87 @@ class _AccountScreenState extends State<AccountScreen> {
       _initialGender = _selectedGender;
       _initialAgeRange = _ageRange;
       _initialDistance = _distance;
+      _initialAvatarUrl = _avatarUrl;
     });
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(content: Text('Gemt')),
     );
+  }
+
+
+  Future<void> _uploadAvatar() async {
+    if (_isUploadingAvatar) {
+      return;
+    }
+
+    final client = Supabase.instance.client;
+    final user = client.auth.currentUser;
+    if (user == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Du skal være logget ind for at uploade billede.')),
+      );
+      return;
+    }
+
+    try {
+      final picker = ImagePicker();
+      final pickedFile = await picker.pickImage(
+        source: ImageSource.gallery,
+        imageQuality: 85,
+      );
+      if (pickedFile == null) {
+        return;
+      }
+
+      setState(() => _isUploadingAvatar = true);
+
+      final bytes = await pickedFile.readAsBytes();
+      final path = '${user.id}/avatar.jpg';
+      await client.storage.from('avatars').uploadBinary(
+            path,
+            Uint8List.fromList(bytes),
+            fileOptions: const FileOptions(
+              upsert: true,
+              contentType: 'image/jpeg',
+            ),
+          );
+      final publicUrl = client.storage.from('avatars').getPublicUrl(path);
+
+      final age = int.tryParse(_ageController.text.trim()) ?? 0;
+      await _profileRepository.saveProfile(
+        Profile(
+          name: _nameController.text.trim(),
+          age: age,
+          location: _initialLocation,
+          gender: _selectedOwnGender,
+          genderPreference: _selectedGender,
+          ageRangeMin: _ageRange.start.round(),
+          ageRangeMax: _ageRange.end.round(),
+          distanceKm: _distance.round(),
+          avatarUrl: publicUrl,
+        ),
+      );
+
+      if (!mounted) {
+        return;
+      }
+
+      setState(() {
+        _avatarUrl = publicUrl;
+        _initialAvatarUrl = publicUrl;
+      });
+    } catch (_) {
+      if (!mounted) {
+        return;
+      }
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Kunne ikke uploade billede. Prøv igen.')),
+      );
+    } finally {
+      if (mounted) {
+        setState(() => _isUploadingAvatar = false);
+      }
+    }
   }
 
   Future<void> _handleLogout() async {
@@ -216,55 +304,103 @@ class _AccountScreenState extends State<AccountScreen> {
                           ),
                           child: Column(
                             children: [
-                              Row(
+                              Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  CircleAvatar(
-                                    radius: 30,
-                                    backgroundColor: AppColors.surfaceTint,
-                                    child: const Icon(
-                                      Icons.person_outline,
-                                      color: AppColors.primary,
-                                      size: 28,
+                                  Text(
+                                    'Profilbillede',
+                                    style: TextStyle(
+                                      fontSize: 13,
+                                      color: AppColors.textMuted,
+                                      fontWeight: FontWeight.w600,
                                     ),
                                   ),
-                                  const SizedBox(width: 14),
-                                  Expanded(
-                                    child: Column(
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.start,
-                                      children: [
-                                        Text(
-                                          'Navn',
-                                          style: TextStyle(
-                                            fontSize: 12,
-                                            color: AppColors.textMuted,
-                                            fontWeight: FontWeight.w600,
-                                          ),
-                                        ),
-                                        const SizedBox(height: 6),
-                                        TextField(
-                                          controller: _nameController,
-                                          onChanged: (_) => setState(() {}),
-                                          decoration: InputDecoration(
-                                            isDense: true,
-                                            hintText: 'Indtast navn',
-                                            filled: true,
-                                            fillColor: AppColors.surfaceTint,
-                                            contentPadding:
-                                                const EdgeInsets.symmetric(
-                                              horizontal: 12,
-                                              vertical: 10,
+                                  const SizedBox(height: 12),
+                                  ClipRRect(
+                                    borderRadius: BorderRadius.circular(24),
+                                    child: Container(
+                                      width: double.infinity,
+                                      height: 220,
+                                      color: AppColors.surfaceTint,
+                                      child: _avatarUrl == null || _avatarUrl!.isEmpty
+                                          ? const Icon(
+                                              Icons.person_outline,
+                                              color: AppColors.primary,
+                                              size: 64,
+                                            )
+                                          : Image.network(
+                                              _avatarUrl!,
+                                              fit: BoxFit.cover,
                                             ),
-                                            border: OutlineInputBorder(
-                                              borderRadius:
-                                                  BorderRadius.circular(12),
-                                              borderSide: BorderSide.none,
-                                            ),
-                                          ),
-                                        ),
-                                      ],
                                     ),
+                                  ),
+                                  const SizedBox(height: 12),
+                                  SizedBox(
+                                    width: double.infinity,
+                                    child: ElevatedButton(
+                                      onPressed: _isUploadingAvatar ? null : _uploadAvatar,
+                                      style: ElevatedButton.styleFrom(
+                                        padding: const EdgeInsets.symmetric(vertical: 16),
+                                        backgroundColor: AppColors.primary,
+                                        disabledBackgroundColor: AppColors.border,
+                                        shape: RoundedRectangleBorder(
+                                          borderRadius: BorderRadius.circular(22),
+                                        ),
+                                      ),
+                                      child: Text(
+                                        _isUploadingAvatar
+                                            ? 'Uploader billede...'
+                                            : 'Upload billede',
+                                        style: TextStyle(
+                                          color: _isUploadingAvatar
+                                              ? AppColors.textMuted
+                                              : Colors.white,
+                                          fontWeight: FontWeight.w700,
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                  const SizedBox(height: 18),
+                                  Row(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      Expanded(
+                                        child: Column(
+                                          crossAxisAlignment: CrossAxisAlignment.start,
+                                          children: [
+                                            Text(
+                                              'Navn',
+                                              style: TextStyle(
+                                                fontSize: 12,
+                                                color: AppColors.textMuted,
+                                                fontWeight: FontWeight.w600,
+                                              ),
+                                            ),
+                                            const SizedBox(height: 6),
+                                            TextField(
+                                              controller: _nameController,
+                                              onChanged: (_) => setState(() {}),
+                                              decoration: InputDecoration(
+                                                isDense: true,
+                                                hintText: 'Indtast navn',
+                                                filled: true,
+                                                fillColor: AppColors.surfaceTint,
+                                                contentPadding:
+                                                    const EdgeInsets.symmetric(
+                                                  horizontal: 12,
+                                                  vertical: 10,
+                                                ),
+                                                border: OutlineInputBorder(
+                                                  borderRadius:
+                                                      BorderRadius.circular(12),
+                                                  borderSide: BorderSide.none,
+                                                ),
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                    ],
                                   ),
                                 ],
                               ),

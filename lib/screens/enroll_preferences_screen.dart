@@ -49,6 +49,7 @@ class _EnrollPreferencesScreenState extends State<EnrollPreferencesScreen> {
         ageRangeMin: _ageRange.start.round(),
         ageRangeMax: _ageRange.end.round(),
         distanceKm: _distance.round(),
+        avatarUrl: widget.draft.avatarUrl,
       ),
     );
 

@@ -343,6 +343,7 @@ class _EnrollScreenState extends State<EnrollScreen> {
             ageRangeMin: _ageRange.start.round(),
             ageRangeMax: _ageRange.end.round(),
             distanceKm: _distance.round(),
+            avatarUrl: null,
           ),
         );
         Navigator.of(context).pushReplacement(
