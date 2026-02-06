@@ -217,7 +217,7 @@ class _OpenChatsScreenState extends State<OpenChatsScreen> {
                               Navigator.push(
                                 context,
                                 MaterialPageRoute(
-                                  builder: (_) => SecretChatScreen(chatId: chat.id),
+                                  builder: (_) => SecretChatScreen(matchId: chat.id),
                                 ),
                               );
                             },

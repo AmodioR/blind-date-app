@@ -12,9 +12,9 @@ import '../theme/app_colors.dart';
 import 'match_profile_screen.dart';
 
 class SecretChatScreen extends StatefulWidget {
-  final String? chatId;
+  final String? matchId;
   final String? title;
-  const SecretChatScreen({super.key, this.chatId, this.title});
+  const SecretChatScreen({super.key, this.matchId, this.title});
 
   @override
   State<SecretChatScreen> createState() => _SecretChatScreenState();
@@ -42,7 +42,7 @@ class _SecretChatScreenState extends State<SecretChatScreen> {
   }
 
   Future<void> _loadData() async {
-    if (widget.chatId == null) {
+    if (widget.matchId == null) {
       if (!mounted) {
         return;
       }
@@ -53,12 +53,12 @@ class _SecretChatScreenState extends State<SecretChatScreen> {
     final threads = await _repository.listThreads();
     ChatThread? thread;
     for (final item in threads) {
-      if (item.id == widget.chatId) {
+      if (item.id == widget.matchId) {
         thread = item;
         break;
       }
     }
-    final messages = await _repository.loadMessages(widget.chatId!);
+    final messages = await _repository.loadMessages(widget.matchId!);
 
     if (!mounted) {
       return;
@@ -71,9 +71,9 @@ class _SecretChatScreenState extends State<SecretChatScreen> {
       _isLoading = false;
     });
 
-    await _loadRemoteMatchProfile(matchId: widget.chatId!);
+    await _loadRemoteMatchProfile(matchId: widget.matchId!);
 
-    _subscribeToMatchMessages(matchId: widget.chatId!);
+    _subscribeToMatchMessages(matchId: widget.matchId!);
   }
 
   Future<void> _loadRemoteMatchProfile({required String matchId}) async {
@@ -251,7 +251,7 @@ class _SecretChatScreenState extends State<SecretChatScreen> {
 
   Future<void> _handleSend() async {
     final text = _textController.text.trim();
-    final matchId = widget.chatId;
+    final matchId = widget.matchId;
     if (text.isEmpty || matchId == null) {
       return;
     }
@@ -418,14 +418,14 @@ class _SecretChatScreenState extends State<SecretChatScreen> {
                       alignment: Alignment.centerRight,
                       child: IconButton(
                         icon: const Icon(Icons.account_circle_outlined),
-                        onPressed: widget.chatId == null
+                        onPressed: widget.matchId == null
                             ? null
                             : () {
                                 Navigator.push(
                                   context,
                                   MaterialPageRoute(
                                     builder: (_) => MatchProfileScreen(
-                                      matchId: widget.chatId!,
+                                      matchId: widget.matchId!,
                                       name: _chatName,
                                       age: _chatAge,
                                     ),
