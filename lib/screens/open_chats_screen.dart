@@ -9,12 +9,7 @@ import '../theme/app_colors.dart';
 import 'secret_chat_screen.dart';
 
 class OpenChatsScreen extends StatefulWidget {
-  const OpenChatsScreen({
-    super.key,
-    required this.currentUserId,
-  });
-
-  final String currentUserId;
+  const OpenChatsScreen({super.key});
 
   @override
   State<OpenChatsScreen> createState() => _OpenChatsScreenState();
@@ -54,7 +49,13 @@ class _OpenChatsScreenState extends State<OpenChatsScreen> {
     }
 
     final client = Supabase.instance.client;
-    ChatMessage.currentUserId = widget.currentUserId;
+    final session = client.auth.currentSession;
+    final user = client.auth.currentUser;
+    if (session == null || user == null) {
+      return;
+    }
+
+    ChatMessage.currentUserId = user.id;
 
     _messagesChannel = client
         .channel('open-chats:messages')

@@ -1,9 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
-
 import '../data/profile/profile_repository_factory.dart';
 import '../data/profile/profile_model.dart';
-import 'app_session.dart';
 import 'enroll_screen.dart';
 import 'landing_screen.dart';
 import 'main_tab_screen.dart';
@@ -16,181 +14,117 @@ class AuthGate extends StatefulWidget {
 }
 
 class _AuthGateState extends State<AuthGate> {
-  String? _activeAccessToken;
-  Future<_InitResult>? _initFuture;
+  Session? _currentSession;
+  Future<Profile?>? _profileFuture;
+  _AuthDestination? _lastDestination;
 
   @override
   void initState() {
     super.initState();
-    _handleSessionChanged(Supabase.instance.client.auth.currentSession);
+    final client = Supabase.instance.client;
+    _currentSession = client.auth.currentSession;
+    if (_currentSession != null) {
+      _profileFuture = ProfileRepositoryFactory.create().loadProfile();
+    }
   }
 
-  void _handleSessionChanged(Session? session) {
-    final accessToken = session?.accessToken;
-    if (_activeAccessToken == accessToken) {
+  void _updateSession(Session? session) {
+    if (_currentSession?.accessToken == session?.accessToken) {
       return;
     }
-
-    _activeAccessToken = accessToken;
-    if (accessToken == null) {
-      _initFuture = null;
-      setState(() {});
-      return;
-    }
-
-    _startInitialization();
-  }
-
-  void _startInitialization() {
     setState(() {
-      _initFuture = _initializeAuthenticatedApp();
+      _currentSession = session;
+      _lastDestination = null;
+      if (session == null) {
+        _profileFuture = Future.value(null);
+      } else {
+        _profileFuture = ProfileRepositoryFactory.create().loadProfile();
+      }
     });
   }
 
-  Future<_InitResult> _initializeAuthenticatedApp() async {
-    try {
-      final client = Supabase.instance.client;
-      final user = client.auth.currentUser;
-      if (user == null) {
-        return const _InitResult.unauthenticated();
-      }
-
-      final profile = await ProfileRepositoryFactory.create().loadProfile();
-      if (profile == null) {
-        return const _InitResult.profileMissing();
-      }
-
-      final appSession = AppSession(userId: user.id, profile: profile);
-      return _InitResult.ready(appSession);
-    } catch (error) {
-      return _InitResult.error(error);
+  void _scheduleSessionUpdate(Session? session) {
+    if (_currentSession?.accessToken == session?.accessToken) {
+      return;
     }
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) {
+        return;
+      }
+      _updateSession(session);
+    });
+  }
+
+  void _scheduleNavigation(_AuthDestination destination, Widget screen) {
+    if (_lastDestination == destination) {
+      return;
+    }
+    _lastDestination = destination;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) {
+        return;
+      }
+      Navigator.of(context).pushAndRemoveUntil(
+        MaterialPageRoute(builder: (_) => screen),
+        (route) => route.isFirst,
+      );
+    });
   }
 
   @override
   Widget build(BuildContext context) {
     final client = Supabase.instance.client;
-
     return StreamBuilder<AuthState>(
       stream: client.auth.onAuthStateChange,
       builder: (context, snapshot) {
         final session = snapshot.data?.session ?? client.auth.currentSession;
-        _handleSessionChanged(session);
-
-        if (session == null) {
-          return const LandingScreen();
+        _scheduleSessionUpdate(session);
+        if (session != null) {
+          final profileFuture = _profileFuture;
+          if (profileFuture == null) {
+            return const _AuthLoadingScreen();
+          }
+          return FutureBuilder<Profile?>(
+            future: profileFuture,
+            builder: (context, profileSnapshot) {
+              if (profileSnapshot.connectionState != ConnectionState.done) {
+                return const _AuthLoadingScreen();
+              }
+              if (profileSnapshot.data == null) {
+                _scheduleNavigation(
+                  _AuthDestination.enroll,
+                  const EnrollScreen(),
+                );
+                return const _AuthLoadingScreen();
+              }
+              _scheduleNavigation(
+                _AuthDestination.main,
+                const MainTabScreen(),
+              );
+              return const _AuthLoadingScreen();
+            },
+          );
         }
-
-        final initFuture = _initFuture;
-        if (initFuture == null) {
-          return const _AppLoadingScreen();
-        }
-
-        return FutureBuilder<_InitResult>(
-          future: initFuture,
-          builder: (context, initSnapshot) {
-            if (initSnapshot.connectionState != ConnectionState.done) {
-              return const _AppLoadingScreen();
-            }
-
-            final result = initSnapshot.data;
-            if (result == null) {
-              return _InitErrorScreen(onRetry: _startInitialization);
-            }
-
-            if (result.status == _InitStatus.error) {
-              return _InitErrorScreen(onRetry: _startInitialization);
-            }
-
-            if (result.status == _InitStatus.unauthenticated) {
-              return const LandingScreen();
-            }
-
-            if (result.status == _InitStatus.profileMissing) {
-              return EnrollScreen(onCompleted: _startInitialization);
-            }
-
-            final appSession = result.session;
-            if (appSession == null) {
-              return _InitErrorScreen(onRetry: _startInitialization);
-            }
-
-            return MainTabScreen(
-              appSession: appSession,
-              onLogout: () async {
-                await client.auth.signOut();
-              },
-            );
-          },
+        _scheduleNavigation(
+          _AuthDestination.landing,
+          const LandingScreen(),
         );
+        return const _AuthLoadingScreen();
       },
     );
   }
 }
 
-enum _InitStatus { unauthenticated, profileMissing, ready, error }
+enum _AuthDestination { landing, enroll, main }
 
-class _InitResult {
-  const _InitResult._({
-    required this.status,
-    this.session,
-    this.error,
-  });
-
-  const _InitResult.unauthenticated() : this._(status: _InitStatus.unauthenticated);
-
-  const _InitResult.profileMissing() : this._(status: _InitStatus.profileMissing);
-
-  const _InitResult.ready(AppSession appSession)
-      : this._(status: _InitStatus.ready, session: appSession);
-
-  const _InitResult.error(Object error)
-      : this._(status: _InitStatus.error, error: error);
-
-  final _InitStatus status;
-  final AppSession? session;
-  final Object? error;
-}
-
-class _AppLoadingScreen extends StatelessWidget {
-  const _AppLoadingScreen();
+class _AuthLoadingScreen extends StatelessWidget {
+  const _AuthLoadingScreen();
 
   @override
   Widget build(BuildContext context) {
     return const Scaffold(
       body: Center(
         child: CircularProgressIndicator(strokeWidth: 2),
-      ),
-    );
-  }
-}
-
-class _InitErrorScreen extends StatelessWidget {
-  const _InitErrorScreen({required this.onRetry});
-
-  final VoidCallback onRetry;
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      body: Center(
-        child: Padding(
-          padding: const EdgeInsets.all(24),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              const Text(
-                'Noget gik galt under opstarten.',
-                textAlign: TextAlign.center,
-              ),
-              const SizedBox(height: 16),
-              ElevatedButton(
-                onPressed: onRetry,
-                child: const Text('Prøv igen'),
-              ),
-            ],
-          ),
-        ),
       ),
     );
   }

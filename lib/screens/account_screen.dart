@@ -1,18 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
+import '../config/supabase_config.dart';
 import '../data/profile/profile_model.dart';
 import '../data/profile/profile_repository_factory.dart';
 import '../theme/app_colors.dart';
+import 'landing_screen.dart';
 
 class AccountScreen extends StatefulWidget {
-  const AccountScreen({
-    super.key,
-    required this.initialProfile,
-    required this.onLogout,
-  });
-
-  final Profile initialProfile;
-  final Future<void> Function() onLogout;
+  const AccountScreen({super.key});
 
   @override
   State<AccountScreen> createState() => _AccountScreenState();
@@ -40,38 +36,47 @@ class _AccountScreenState extends State<AccountScreen> {
   @override
   void initState() {
     super.initState();
-    _applyProfile(widget.initialProfile);
+    _nameController.text = _initialName;
+    _ageController.text = _initialAge;
+    _loadProfile();
   }
 
-  void _applyProfile(Profile profile) {
-    if (profile.name.isNotEmpty) {
-      _initialName = profile.name;
-      _nameController.text = profile.name;
-    } else {
-      _nameController.text = _initialName;
+  Future<void> _loadProfile() async {
+    final profile = await _profileRepository.loadProfile();
+
+    if (!mounted) {
+      return;
     }
-    if (profile.age > 0) {
-      _initialAge = profile.age.toString();
-      _ageController.text = _initialAge;
-    } else {
-      _ageController.text = _initialAge;
-    }
-    if (profile.location.isNotEmpty) {
-      _initialLocation = profile.location;
-    }
-    _initialOwnGender = profile.gender;
-    _selectedOwnGender = profile.gender;
-    if (profile.genderPreference.isNotEmpty) {
-      _initialGender = profile.genderPreference;
-      _selectedGender = profile.genderPreference;
-    }
-    _initialAgeRange = RangeValues(
-      profile.ageRangeMin.toDouble(),
-      profile.ageRangeMax.toDouble(),
-    );
-    _ageRange = _initialAgeRange;
-    _initialDistance = profile.distanceKm.toDouble();
-    _distance = _initialDistance;
+
+    setState(() {
+      if (profile == null) {
+        return;
+      }
+      if (profile.name.isNotEmpty) {
+        _initialName = profile.name;
+        _nameController.text = profile.name;
+      }
+      if (profile.age > 0) {
+        _initialAge = profile.age.toString();
+        _ageController.text = _initialAge;
+      }
+      if (profile.location.isNotEmpty) {
+        _initialLocation = profile.location;
+      }
+      _initialOwnGender = profile.gender;
+      _selectedOwnGender = profile.gender;
+      if (profile.genderPreference.isNotEmpty) {
+        _initialGender = profile.genderPreference;
+        _selectedGender = profile.genderPreference;
+      }
+      _initialAgeRange = RangeValues(
+        profile.ageRangeMin.toDouble(),
+        profile.ageRangeMax.toDouble(),
+      );
+      _ageRange = _initialAgeRange;
+      _initialDistance = profile.distanceKm.toDouble();
+      _distance = _initialDistance;
+    });
   }
 
   @override
@@ -124,10 +129,15 @@ class _AccountScreenState extends State<AccountScreen> {
 
   Future<void> _handleLogout() async {
     bool signOutFailed = false;
-    try {
-      await widget.onLogout();
-    } catch (_) {
-      signOutFailed = true;
+    if (SupabaseConfig.isConfigured) {
+      final session = Supabase.instance.client.auth.currentSession;
+      if (session != null) {
+        try {
+          await Supabase.instance.client.auth.signOut();
+        } catch (_) {
+          signOutFailed = true;
+        }
+      }
     }
 
     await _profileRepository.clearProfile();
@@ -141,6 +151,14 @@ class _AccountScreenState extends State<AccountScreen> {
         const SnackBar(content: Text('Kunne ikke logge ud')),
       );
     }
+
+    Navigator.pushAndRemoveUntil(
+      context,
+      MaterialPageRoute(
+        builder: (_) => const LandingScreen(),
+      ),
+      (route) => false,
+    );
   }
 
   @override
