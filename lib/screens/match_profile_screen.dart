@@ -28,6 +28,7 @@ class _MatchProfileScreenState extends State<MatchProfileScreen> {
   final _repository = RemoteMatchesRepository();
   StreamSubscription<({int myCount, int theirCount})>? _countsSubscription;
   RealtimeChannel? _matchChannel;
+  String? _currentUserId;
 
   MatchModel? _match;
   int _myCount = 0;
@@ -91,11 +92,12 @@ class _MatchProfileScreenState extends State<MatchProfileScreen> {
     if (user == null) {
       return;
     }
+    _currentUserId = user.id;
 
     _matchChannel = client
         .channel('match:${widget.matchId}')
         .onPostgresChanges(
-          event: PostgresChangeEvent.update,
+          event: PostgresChangeEvent.all,
           schema: 'public',
           table: 'matches',
           filter: PostgresChangeFilter(
@@ -108,17 +110,48 @@ class _MatchProfileScreenState extends State<MatchProfileScreen> {
               return;
             }
 
-            final nextMatch = MatchModel.fromDatabaseRow(
-              payload.newRecord,
-              currentUserId: user.id,
-            );
-
-            setState(() {
-              _match = nextMatch.copyWith(myCount: _myCount, theirCount: _theirCount);
-            });
+            _applyRealtimeMatchUpdate(payload.newRecord);
           },
         )
         .subscribe();
+  }
+
+  void _applyRealtimeMatchUpdate(Map<String, dynamic> row) {
+    final currentUserId = _currentUserId;
+    if (currentUserId == null) {
+      return;
+    }
+
+    final previous = _match;
+    final userA = row['user_a']?.toString() ?? previous?.userA ?? '';
+    final userB = row['user_b']?.toString() ?? previous?.userB ?? '';
+
+    final isUserA = currentUserId == userA || (currentUserId != userB && previous != null && currentUserId == previous.userA);
+
+    final unlockedByA = row.containsKey('unlocked_by_a')
+        ? row['unlocked_by_a'] == true
+        : (previous == null ? false : (isUserA ? previous.unlockedByMe : previous.unlockedByOther));
+    final unlockedByB = row.containsKey('unlocked_by_b')
+        ? row['unlocked_by_b'] == true
+        : (previous == null ? false : (isUserA ? previous.unlockedByOther : previous.unlockedByMe));
+
+    final rawUnlockedAt = row.containsKey('unlocked_at') ? row['unlocked_at'] : null;
+    final unlockedAt = rawUnlockedAt == null
+        ? previous?.unlockedAt
+        : DateTime.tryParse(rawUnlockedAt.toString());
+
+    setState(() {
+      _match = MatchModel(
+        id: row['id']?.toString() ?? previous?.id ?? widget.matchId,
+        userA: userA,
+        userB: userB,
+        unlockedByMe: isUserA ? unlockedByA : unlockedByB,
+        unlockedByOther: isUserA ? unlockedByB : unlockedByA,
+        unlockedAt: unlockedAt,
+        myCount: _myCount,
+        theirCount: _theirCount,
+      );
+    });
   }
 
   Future<void> _handleUnlock() async {
