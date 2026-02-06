@@ -3,10 +3,14 @@ import 'package:flutter/services.dart';
 import '../data/profile/profile_model.dart';
 import '../data/profile/profile_repository_factory.dart';
 import '../theme/app_colors.dart';
-import 'main_tab_screen.dart';
 
 class EnrollScreen extends StatefulWidget {
-  const EnrollScreen({super.key});
+  const EnrollScreen({
+    super.key,
+    this.onCompleted,
+  });
+
+  final VoidCallback? onCompleted;
 
   @override
   State<EnrollScreen> createState() => _EnrollScreenState();
@@ -345,9 +349,10 @@ class _EnrollScreenState extends State<EnrollScreen> {
             distanceKm: _distance.round(),
           ),
         );
-        Navigator.of(context).pushReplacement(
-          MaterialPageRoute(builder: (_) => const MainTabScreen()),
-        );
+        final onCompleted = widget.onCompleted;
+        if (onCompleted != null) {
+          onCompleted();
+        }
       },
       style: ElevatedButton.styleFrom(
         backgroundColor: AppColors.primary,
