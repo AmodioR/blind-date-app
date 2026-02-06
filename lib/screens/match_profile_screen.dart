@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:ui';
 
 import 'package:flutter/material.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../data/matches/match_model.dart';
 import '../data/matches/remote_matches_repository.dart';
@@ -25,8 +26,8 @@ class MatchProfileScreen extends StatefulWidget {
 
 class _MatchProfileScreenState extends State<MatchProfileScreen> {
   final _repository = RemoteMatchesRepository();
-  StreamSubscription<MatchModel?>? _matchSubscription;
   StreamSubscription<({int myCount, int theirCount})>? _countsSubscription;
+  RealtimeChannel? _matchChannel;
 
   MatchModel? _match;
   int _myCount = 0;
@@ -41,26 +42,22 @@ class _MatchProfileScreenState extends State<MatchProfileScreen> {
   @override
   void initState() {
     super.initState();
-    _subscribeToMatchData();
+    _subscribeToMatchCounts();
+    _loadInitialMatch();
+    _subscribeToMatchUpdates();
   }
 
   @override
   void dispose() {
-    _matchSubscription?.cancel();
     _countsSubscription?.cancel();
+    if (_matchChannel != null) {
+      Supabase.instance.client.removeChannel(_matchChannel!);
+      _matchChannel = null;
+    }
     super.dispose();
   }
 
-  void _subscribeToMatchData() {
-    _matchSubscription = _repository.watchMatch(widget.matchId).listen((match) {
-      if (!mounted) {
-        return;
-      }
-      setState(() {
-        _match = match?.copyWith(myCount: _myCount, theirCount: _theirCount);
-      });
-    });
-
+  void _subscribeToMatchCounts() {
     _countsSubscription = _repository.watchMessageCounts(widget.matchId).listen((counts) {
       if (!mounted) {
         return;
@@ -71,6 +68,57 @@ class _MatchProfileScreenState extends State<MatchProfileScreen> {
         _match = _match?.copyWith(myCount: _myCount, theirCount: _theirCount);
       });
     });
+  }
+
+  Future<void> _loadInitialMatch() async {
+    final match = await _repository.getMatch(widget.matchId);
+    if (!mounted) {
+      return;
+    }
+
+    setState(() {
+      _match = match?.copyWith(myCount: _myCount, theirCount: _theirCount);
+    });
+  }
+
+  void _subscribeToMatchUpdates() {
+    if (_matchChannel != null) {
+      return;
+    }
+
+    final client = Supabase.instance.client;
+    final user = client.auth.currentUser;
+    if (user == null) {
+      return;
+    }
+
+    _matchChannel = client
+        .channel('match:${widget.matchId}')
+        .onPostgresChanges(
+          event: PostgresChangeEvent.update,
+          schema: 'public',
+          table: 'matches',
+          filter: PostgresChangeFilter(
+            type: PostgresChangeFilterType.eq,
+            column: 'id',
+            value: widget.matchId,
+          ),
+          callback: (payload) {
+            if (!mounted) {
+              return;
+            }
+
+            final nextMatch = MatchModel.fromDatabaseRow(
+              payload.newRecord,
+              currentUserId: user.id,
+            );
+
+            setState(() {
+              _match = nextMatch.copyWith(myCount: _myCount, theirCount: _theirCount);
+            });
+          },
+        )
+        .subscribe();
   }
 
   Future<void> _handleUnlock() async {
