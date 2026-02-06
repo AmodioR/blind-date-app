@@ -143,7 +143,7 @@ class _HomeScreenState extends State<HomeScreen> {
     await Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (_) => SecretChatScreen(chatId: matchId, title: 'Nyt match'),
+        builder: (_) => SecretChatScreen(matchId: matchId, title: 'Nyt match'),
       ),
     );
   }
