@@ -84,7 +84,7 @@ class _MatchProfileScreenState extends State<MatchProfileScreen> {
       _match = nextMatch;
       _loading = false;
     });
-    await _loadUnlockedAvatarIfNeeded(nextMatch);
+    await _loadMatchAvatar(nextMatch);
   }
 
   void _subscribeToMatchUpdates() {
@@ -141,15 +141,11 @@ class _MatchProfileScreenState extends State<MatchProfileScreen> {
       _match = updatedMatch;
       _loading = false;
     });
-    _loadUnlockedAvatarIfNeeded(updatedMatch);
+    _loadMatchAvatar(updatedMatch);
   }
 
-
-  Future<void> _loadUnlockedAvatarIfNeeded(MatchModel? match) async {
-    if (match == null || !match.isFullyUnlocked) {
-      if (mounted && _matchAvatarUrl != null) {
-        setState(() => _matchAvatarUrl = null);
-      }
+  Future<void> _loadMatchAvatar(MatchModel? match) async {
+    if (match == null) {
       return;
     }
 
@@ -189,6 +185,28 @@ class _MatchProfileScreenState extends State<MatchProfileScreen> {
       return trimmed;
     }
     return Supabase.instance.client.storage.from('avatars').getPublicUrl(trimmed);
+  }
+
+  Widget _buildImagePlaceholder() {
+    return Container(
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          colors: [
+            Colors.white.withValues(alpha: 0.24),
+            Colors.white.withValues(alpha: 0.08),
+          ],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+      ),
+      child: Center(
+        child: Icon(
+          Icons.person,
+          size: 96,
+          color: Colors.white.withValues(alpha: 0.72),
+        ),
+      ),
+    );
   }
 
   Future<void> _handleUnlock() async {
@@ -360,22 +378,44 @@ class _MatchProfileScreenState extends State<MatchProfileScreen> {
                             SizedBox(
                               height: 340,
                               width: double.infinity,
-                              child: (!isLocked && _matchAvatarUrl != null)
+                              child: _matchAvatarUrl != null
                                   ? Image.network(
                                       _matchAvatarUrl!,
                                       fit: BoxFit.cover,
                                     )
-                                  : Image.asset(
-                                      'assets/images/BDV4.png',
-                                      fit: BoxFit.cover,
-                                    ),
+                                  : _buildImagePlaceholder(),
                             ),
-                            if (isLocked)
+                            if (isLocked && _matchAvatarUrl != null)
                               Positioned.fill(
                                 child: BackdropFilter(
                                   filter: ImageFilter.blur(sigmaX: 16, sigmaY: 16),
-                                  child: Container(
-                                    color: Colors.black.withValues(alpha: 0.2),
+                                  child: const SizedBox.expand(),
+                                ),
+                              ),
+                            if (isLocked)
+                              Positioned.fill(
+                                child: Container(
+                                  color: Colors.black.withValues(alpha: 0.26),
+                                  child: Center(
+                                    child: Column(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        Icon(
+                                          Icons.lock,
+                                          color: Colors.white.withValues(alpha: 0.95),
+                                          size: 32,
+                                        ),
+                                        const SizedBox(height: 10),
+                                        Text(
+                                          'Billeder låst',
+                                          style: TextStyle(
+                                            color: Colors.white.withValues(alpha: 0.95),
+                                            fontSize: 16,
+                                            fontWeight: FontWeight.w700,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
                                   ),
                                 ),
                               ),
