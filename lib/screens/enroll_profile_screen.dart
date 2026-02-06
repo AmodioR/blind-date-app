@@ -17,6 +17,7 @@ class EnrollProfileScreen extends StatefulWidget {
 class _EnrollProfileScreenState extends State<EnrollProfileScreen> {
   late final TextEditingController _nameController;
   late final TextEditingController _ageController;
+  String? _selectedGender;
 
   @override
   void initState() {
@@ -25,6 +26,7 @@ class _EnrollProfileScreenState extends State<EnrollProfileScreen> {
     _ageController = TextEditingController(
       text: widget.draft.age?.toString() ?? '',
     );
+    _selectedGender = widget.draft.gender;
   }
 
   @override
@@ -37,7 +39,7 @@ class _EnrollProfileScreenState extends State<EnrollProfileScreen> {
   bool get _isValid {
     final name = _nameController.text.trim();
     final age = int.tryParse(_ageController.text.trim());
-    return name.isNotEmpty && age != null && age >= 18;
+    return name.isNotEmpty && age != null && age >= 18 && _selectedGender != null;
   }
 
   @override
@@ -69,7 +71,7 @@ class _EnrollProfileScreenState extends State<EnrollProfileScreen> {
                 ),
                 const SizedBox(height: 8),
                 const Text(
-                  'Vi skal bruge navn og alder for at oprette din profil.',
+                  'Vi skal bruge navn, alder og dit køn for at oprette din profil.',
                   style: TextStyle(color: Colors.white70, fontSize: 15),
                 ),
                 const SizedBox(height: 24),
@@ -92,6 +94,35 @@ class _EnrollProfileScreenState extends State<EnrollProfileScreen> {
                     decoration: _inputDecoration('Indtast alder'),
                   ),
                 ),
+                const SizedBox(height: 16),
+                _Field(
+                  label: 'Mit køn',
+                  child: Wrap(
+                    spacing: 10,
+                    runSpacing: 10,
+                    children: ['Mand', 'Kvinde', 'Andet / Vil ikke sige']
+                        .map(
+                          (option) => ChoiceChip(
+                            label: Text(option),
+                            selected: _selectedGender == option,
+                            onSelected: (_) {
+                              setState(() {
+                                _selectedGender = option;
+                              });
+                            },
+                            selectedColor: AppColors.primary.withValues(alpha: 0.2),
+                            backgroundColor: Colors.white,
+                            labelStyle: TextStyle(
+                              color: _selectedGender == option
+                                  ? AppColors.primaryDeep
+                                  : AppColors.textSoft,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        )
+                        .toList(),
+                  ),
+                ),
                 const Spacer(),
                 ElevatedButton(
                   onPressed: _isValid
@@ -99,6 +130,7 @@ class _EnrollProfileScreenState extends State<EnrollProfileScreen> {
                           final draft = widget.draft.copyWith(
                             name: _nameController.text.trim(),
                             age: int.parse(_ageController.text.trim()),
+                            gender: _selectedGender,
                           );
                           Navigator.of(context).push(
                             MaterialPageRoute(

@@ -44,7 +44,7 @@ class _EnrollPreferencesScreenState extends State<EnrollPreferencesScreen> {
         name: widget.draft.name,
         age: widget.draft.age ?? 0,
         location: '',
-        gender: null,
+        gender: widget.draft.gender,
         genderPreference: _selectedGenderPreference,
         ageRangeMin: _ageRange.start.round(),
         ageRangeMax: _ageRange.end.round(),
