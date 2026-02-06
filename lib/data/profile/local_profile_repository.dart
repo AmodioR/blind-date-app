@@ -12,6 +12,7 @@ class LocalProfileRepository implements ProfileRepository {
   static const ageRangeMinKey = 'enroll_age_range_min';
   static const ageRangeMaxKey = 'enroll_age_range_max';
   static const distanceKmKey = 'enroll_distance_km';
+  static const avatarUrlKey = 'enroll_avatar_url';
 
   @override
   Future<Profile?> loadProfile() async {
@@ -24,6 +25,7 @@ class LocalProfileRepository implements ProfileRepository {
     final ageRangeMin = prefs.getInt(ageRangeMinKey);
     final ageRangeMax = prefs.getInt(ageRangeMaxKey);
     final distanceKm = prefs.getInt(distanceKmKey);
+    final avatarUrl = prefs.getString(avatarUrlKey);
 
     if (name == null &&
         age == null &&
@@ -32,7 +34,8 @@ class LocalProfileRepository implements ProfileRepository {
         genderPreference == null &&
         ageRangeMin == null &&
         ageRangeMax == null &&
-        distanceKm == null) {
+        distanceKm == null &&
+        avatarUrl == null) {
       return null;
     }
 
@@ -45,6 +48,7 @@ class LocalProfileRepository implements ProfileRepository {
       ageRangeMin: ageRangeMin ?? 24,
       ageRangeMax: ageRangeMax ?? 36,
       distanceKm: distanceKm ?? 25,
+      avatarUrl: avatarUrl,
     );
   }
 
@@ -75,6 +79,11 @@ class LocalProfileRepository implements ProfileRepository {
     await prefs.setInt(ageRangeMinKey, profile.ageRangeMin);
     await prefs.setInt(ageRangeMaxKey, profile.ageRangeMax);
     await prefs.setInt(distanceKmKey, profile.distanceKm);
+    if (profile.avatarUrl == null || profile.avatarUrl!.trim().isEmpty) {
+      await prefs.remove(avatarUrlKey);
+    } else {
+      await prefs.setString(avatarUrlKey, profile.avatarUrl!.trim());
+    }
   }
 
   @override
@@ -88,5 +97,6 @@ class LocalProfileRepository implements ProfileRepository {
     await prefs.remove(ageRangeMinKey);
     await prefs.remove(ageRangeMaxKey);
     await prefs.remove(distanceKmKey);
+    await prefs.remove(avatarUrlKey);
   }
 }

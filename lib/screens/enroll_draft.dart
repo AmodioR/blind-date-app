@@ -7,6 +7,7 @@ class EnrollDraft {
     this.ageRangeMin = 23,
     this.ageRangeMax = 35,
     this.distanceKm = 25,
+    this.avatarUrl,
   });
 
   final String name;
@@ -16,6 +17,7 @@ class EnrollDraft {
   final int ageRangeMin;
   final int ageRangeMax;
   final int distanceKm;
+  final String? avatarUrl;
 
   EnrollDraft copyWith({
     String? name,
@@ -27,6 +29,8 @@ class EnrollDraft {
     int? ageRangeMin,
     int? ageRangeMax,
     int? distanceKm,
+    String? avatarUrl,
+    bool clearAvatarUrl = false,
   }) {
     return EnrollDraft(
       name: name ?? this.name,
@@ -36,6 +40,7 @@ class EnrollDraft {
       ageRangeMin: ageRangeMin ?? this.ageRangeMin,
       ageRangeMax: ageRangeMax ?? this.ageRangeMax,
       distanceKm: distanceKm ?? this.distanceKm,
+      avatarUrl: clearAvatarUrl ? null : (avatarUrl ?? this.avatarUrl),
     );
   }
 }

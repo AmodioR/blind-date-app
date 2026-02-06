@@ -35,6 +35,7 @@ class _MatchProfileScreenState extends State<MatchProfileScreen> {
   int _theirCount = 0;
   bool _loading = true;
   bool _isUnlocking = false;
+  String? _matchAvatarUrl;
 
   double get _unlockProgress {
     final minimumCount = _myCount < _theirCount ? _myCount : _theirCount;
@@ -78,10 +79,12 @@ class _MatchProfileScreenState extends State<MatchProfileScreen> {
       return;
     }
 
+    final nextMatch = match?.copyWith(myCount: _myCount, theirCount: _theirCount);
     setState(() {
-      _match = match?.copyWith(myCount: _myCount, theirCount: _theirCount);
+      _match = nextMatch;
       _loading = false;
     });
+    await _loadUnlockedAvatarIfNeeded(nextMatch);
   }
 
   void _subscribeToMatchUpdates() {
@@ -138,6 +141,54 @@ class _MatchProfileScreenState extends State<MatchProfileScreen> {
       _match = updatedMatch;
       _loading = false;
     });
+    _loadUnlockedAvatarIfNeeded(updatedMatch);
+  }
+
+
+  Future<void> _loadUnlockedAvatarIfNeeded(MatchModel? match) async {
+    if (match == null || !match.isFullyUnlocked) {
+      if (mounted && _matchAvatarUrl != null) {
+        setState(() => _matchAvatarUrl = null);
+      }
+      return;
+    }
+
+    final currentUserId = _currentUserId ?? Supabase.instance.client.auth.currentUser?.id;
+    if (currentUserId == null) {
+      return;
+    }
+
+    final otherUserId = currentUserId == match.userA ? match.userB : match.userA;
+
+    try {
+      final profileRow = await Supabase.instance.client
+          .from('profiles')
+          .select('avatar_url')
+          .eq('id', otherUserId)
+          .maybeSingle();
+
+      final rawAvatar = profileRow?['avatar_url']?.toString();
+      final resolvedAvatar = _resolveAvatarUrl(rawAvatar);
+      if (!mounted) {
+        return;
+      }
+      setState(() {
+        _matchAvatarUrl = resolvedAvatar;
+      });
+    } catch (_) {
+      // Keep placeholder on failure.
+    }
+  }
+
+  String? _resolveAvatarUrl(String? value) {
+    if (value == null || value.trim().isEmpty) {
+      return null;
+    }
+    final trimmed = value.trim();
+    if (trimmed.startsWith('http://') || trimmed.startsWith('https://')) {
+      return trimmed;
+    }
+    return Supabase.instance.client.storage.from('avatars').getPublicUrl(trimmed);
   }
 
   Future<void> _handleUnlock() async {
@@ -309,10 +360,15 @@ class _MatchProfileScreenState extends State<MatchProfileScreen> {
                             SizedBox(
                               height: 340,
                               width: double.infinity,
-                              child: Image.asset(
-                                'assets/images/BDV4.png',
-                                fit: BoxFit.cover,
-                              ),
+                              child: (!isLocked && _matchAvatarUrl != null)
+                                  ? Image.network(
+                                      _matchAvatarUrl!,
+                                      fit: BoxFit.cover,
+                                    )
+                                  : Image.asset(
+                                      'assets/images/BDV4.png',
+                                      fit: BoxFit.cover,
+                                    ),
                             ),
                             if (isLocked)
                               Positioned.fill(

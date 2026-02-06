@@ -8,6 +8,7 @@ class Profile {
     required this.ageRangeMin,
     required this.ageRangeMax,
     required this.distanceKm,
+    this.avatarUrl,
   });
 
   final String name;
@@ -18,6 +19,7 @@ class Profile {
   final int ageRangeMin;
   final int ageRangeMax;
   final int distanceKm;
+  final String? avatarUrl;
 
   Profile copyWith({
     String? name,
@@ -29,6 +31,8 @@ class Profile {
     int? ageRangeMin,
     int? ageRangeMax,
     int? distanceKm,
+    String? avatarUrl,
+    bool clearAvatarUrl = false,
   }) {
     return Profile(
       name: name ?? this.name,
@@ -39,6 +43,7 @@ class Profile {
       ageRangeMin: ageRangeMin ?? this.ageRangeMin,
       ageRangeMax: ageRangeMax ?? this.ageRangeMax,
       distanceKm: distanceKm ?? this.distanceKm,
+      avatarUrl: clearAvatarUrl ? null : (avatarUrl ?? this.avatarUrl),
     );
   }
 
@@ -52,6 +57,7 @@ class Profile {
       'age_range_min': ageRangeMin,
       'age_range_max': ageRangeMax,
       'distance_km': distanceKm,
+      'avatar_url': avatarUrl,
     };
   }
 
@@ -65,6 +71,7 @@ class Profile {
       ageRangeMin: map['age_range_min'] as int? ?? 24,
       ageRangeMax: map['age_range_max'] as int? ?? 36,
       distanceKm: map['distance_km'] as int? ?? 25,
+      avatarUrl: map['avatar_url'] as String?,
     );
   }
 
