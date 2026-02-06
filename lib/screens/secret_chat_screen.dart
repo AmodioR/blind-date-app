@@ -418,20 +418,20 @@ class _SecretChatScreenState extends State<SecretChatScreen> {
                       alignment: Alignment.centerRight,
                       child: IconButton(
                         icon: const Icon(Icons.account_circle_outlined),
-                        onPressed: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (_) => MatchProfileScreen(
-                                name: _chatName,
-                                age: _chatAge,
-                                unlockProgress: clampedProgress,
-                                myCount: myCount,
-                                theirCount: theirCount,
-                              ),
-                            ),
-                          );
-                        },
+                        onPressed: widget.chatId == null
+                            ? null
+                            : () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (_) => MatchProfileScreen(
+                                      matchId: widget.chatId!,
+                                      name: _chatName,
+                                      age: _chatAge,
+                                    ),
+                                  ),
+                                );
+                              },
                       ),
                     ),
                   ],
