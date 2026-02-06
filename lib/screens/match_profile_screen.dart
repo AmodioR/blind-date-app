@@ -1,22 +1,99 @@
+import 'dart:async';
 import 'dart:ui';
+
 import 'package:flutter/material.dart';
+
+import '../data/matches/match_model.dart';
+import '../data/matches/remote_matches_repository.dart';
 import '../theme/app_colors.dart';
 
-class MatchProfileScreen extends StatelessWidget {
+class MatchProfileScreen extends StatefulWidget {
+  final String matchId;
   final String name;
   final int age;
-  final double unlockProgress;
-  final int? myCount;
-  final int? theirCount;
 
   const MatchProfileScreen({
     super.key,
+    required this.matchId,
     required this.name,
     required this.age,
-    required this.unlockProgress,
-    this.myCount,
-    this.theirCount,
   });
+
+  @override
+  State<MatchProfileScreen> createState() => _MatchProfileScreenState();
+}
+
+class _MatchProfileScreenState extends State<MatchProfileScreen> {
+  final _repository = RemoteMatchesRepository();
+  StreamSubscription<MatchModel?>? _matchSubscription;
+  StreamSubscription<({int myCount, int theirCount})>? _countsSubscription;
+
+  MatchModel? _match;
+  int _myCount = 0;
+  int _theirCount = 0;
+  bool _isUnlocking = false;
+
+  double get _unlockProgress {
+    final minimumCount = _myCount < _theirCount ? _myCount : _theirCount;
+    return (minimumCount / 10).clamp(0.0, 1.0).toDouble();
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    _subscribeToMatchData();
+  }
+
+  @override
+  void dispose() {
+    _matchSubscription?.cancel();
+    _countsSubscription?.cancel();
+    super.dispose();
+  }
+
+  void _subscribeToMatchData() {
+    _matchSubscription = _repository.watchMatch(widget.matchId).listen((match) {
+      if (!mounted) {
+        return;
+      }
+      setState(() {
+        _match = match?.copyWith(myCount: _myCount, theirCount: _theirCount);
+      });
+    });
+
+    _countsSubscription = _repository.watchMessageCounts(widget.matchId).listen((counts) {
+      if (!mounted) {
+        return;
+      }
+      setState(() {
+        _myCount = counts.myCount;
+        _theirCount = counts.theirCount;
+        _match = _match?.copyWith(myCount: _myCount, theirCount: _theirCount);
+      });
+    });
+  }
+
+  Future<void> _handleUnlock() async {
+    if (_isUnlocking) {
+      return;
+    }
+
+    setState(() => _isUnlocking = true);
+    try {
+      await _repository.unlockMatch(widget.matchId);
+    } catch (_) {
+      if (!mounted) {
+        return;
+      }
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Kunne ikke låse profilen op lige nu.')),
+      );
+    } finally {
+      if (mounted) {
+        setState(() => _isUnlocking = false);
+      }
+    }
+  }
 
   void _showSafetySheet(BuildContext context) {
     showModalBottomSheet(
@@ -46,8 +123,7 @@ class MatchProfileScreen extends StatelessWidget {
                   sheetContext,
                   context,
                   title: 'Blokér',
-                  message:
-                      'Er du sikker på, at du vil blokere denne profil?',
+                  message: 'Er du sikker på, at du vil blokere denne profil?',
                 ),
               ),
               ListTile(
@@ -57,8 +133,7 @@ class MatchProfileScreen extends StatelessWidget {
                   sheetContext,
                   context,
                   title: 'Rapportér',
-                  message:
-                      'Er du sikker på, at du vil rapportere denne profil?',
+                  message: 'Er du sikker på, at du vil rapportere denne profil?',
                 ),
               ),
               const SizedBox(height: 12),
@@ -102,9 +177,17 @@ class MatchProfileScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final double clampedUnlockProgress =
-        unlockProgress.clamp(0.0, 1.0).toDouble();
-    final bool isProfileReadyToUnlock = clampedUnlockProgress >= 1;
+    final match = _match;
+    final isReadyToUnlock = _unlockProgress >= 1;
+    final unlockedByMe = match?.unlockedByMe ?? false;
+    final unlockedByOther = match?.unlockedByOther ?? false;
+    final isFullyUnlocked = match?.isFullyUnlocked ?? false;
+    final isLocked = !isFullyUnlocked;
+
+    final canUnlock = isReadyToUnlock && !unlockedByMe && isLocked && !_isUnlocking;
+    final showButton = !isFullyUnlocked;
+    final buttonLabel = unlockedByMe && !unlockedByOther ? 'Afventer match' : 'Lås op';
+
     return Scaffold(
       body: Stack(
         fit: StackFit.expand,
@@ -124,113 +207,96 @@ class MatchProfileScreen extends StatelessWidget {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
+                      if (isLocked)
+                        Padding(
+                          padding: const EdgeInsets.only(bottom: 10),
+                          child: Align(
+                            alignment: Alignment.centerLeft,
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 12,
+                                vertical: 6,
+                              ),
+                              decoration: BoxDecoration(
+                                color: isReadyToUnlock
+                                    ? AppColors.primary.withValues(alpha: 0.14)
+                                    : Colors.black.withValues(alpha: 0.08),
+                                borderRadius: BorderRadius.circular(999),
+                              ),
+                              child: Text(
+                                isReadyToUnlock ? 'Klar' : 'Låst',
+                                style: TextStyle(
+                                  color: isReadyToUnlock
+                                      ? AppColors.primary
+                                      : Colors.black87,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
                       ClipRRect(
                         borderRadius: BorderRadius.circular(28),
                         child: Stack(
                           children: [
-                            Container(
-                              height: 320,
+                            SizedBox(
+                              height: 340,
                               width: double.infinity,
-                              decoration: BoxDecoration(
-                                gradient: LinearGradient(
-                                  begin: Alignment.topLeft,
-                                  end: Alignment.bottomRight,
-                                  colors: [
-                                    const Color(0xFFED4DC1)
-                                        .withValues(alpha: 0.2),
-                                    const Color(0xFF8E5BFF)
-                                        .withValues(alpha: 0.25),
-                                    const Color(0xFFF4A6DE)
-                                        .withValues(alpha: 0.3),
-                                  ],
-                                ),
-                                borderRadius: BorderRadius.circular(28),
-                                border:
-                                    Border.all(color: const Color(0xFFD9D0F5)),
+                              child: Image.asset(
+                                'assets/images/BDV4.png',
+                                fit: BoxFit.cover,
                               ),
                             ),
-                            Positioned.fill(
-                              child: BackdropFilter(
-                                filter:
-                                    ImageFilter.blur(sigmaX: 18, sigmaY: 18),
-                                child: Container(
-                                  color: Colors.white.withValues(alpha: 0.12),
-                                ),
-                              ),
-                            ),
-                            Positioned.fill(
-                              child: Container(
-                                decoration: BoxDecoration(
-                                  color: Colors.white.withValues(alpha: 0.2),
-                                  borderRadius: BorderRadius.circular(28),
-                                  border: Border.all(
-                                    color: Colors.white.withValues(alpha: 0.25),
+                            if (isLocked)
+                              Positioned.fill(
+                                child: BackdropFilter(
+                                  filter: ImageFilter.blur(sigmaX: 16, sigmaY: 16),
+                                  child: Container(
+                                    color: Colors.black.withValues(alpha: 0.2),
                                   ),
                                 ),
                               ),
-                            ),
                           ],
-                        ),
-                      ),
-                      const SizedBox(height: 18),
-                      Text(
-                        'Profilen er låst. Lås op ved at lære hinanden at kende.',
-                        textAlign: TextAlign.center,
-                        style: const TextStyle(
-                          fontSize: 14,
-                          color: Colors.black54,
-                          height: 1.4,
                         ),
                       ),
                       const SizedBox(height: 24),
                       ClipRRect(
                         borderRadius: BorderRadius.circular(999),
                         child: LinearProgressIndicator(
-                          value: clampedUnlockProgress,
+                          value: _unlockProgress,
                           minHeight: 4,
-                          backgroundColor:
-                              Colors.black.withValues(alpha: 0.08),
-                          valueColor:
-                              const AlwaysStoppedAnimation(AppColors.primary),
+                          backgroundColor: Colors.black.withValues(alpha: 0.08),
+                          valueColor: const AlwaysStoppedAnimation(AppColors.primary),
                         ),
                       ),
                       const SizedBox(height: 12),
-                      SizedBox(
-                        width: double.infinity,
-                        child: ElevatedButton(
-                          onPressed:
-                              isProfileReadyToUnlock
-                                  ? () {
-                                      debugPrint('TODO: unlock profile');
-                                    }
-                                  : null,
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: isProfileReadyToUnlock
-                                ? AppColors.primary
-                                : Colors.grey.withValues(alpha: 0.6),
-                            disabledBackgroundColor:
-                                Colors.grey.withValues(alpha: 0.6),
-                            disabledForegroundColor:
-                                Colors.white.withValues(alpha: 0.7),
-                            padding:
-                                const EdgeInsets.symmetric(vertical: 22),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(28),
+                      if (showButton)
+                        SizedBox(
+                          width: double.infinity,
+                          child: ElevatedButton(
+                            onPressed: canUnlock ? _handleUnlock : null,
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: canUnlock
+                                  ? AppColors.primary
+                                  : Colors.grey.withValues(alpha: 0.6),
+                              disabledBackgroundColor: Colors.grey.withValues(alpha: 0.6),
+                              disabledForegroundColor: Colors.white.withValues(alpha: 0.7),
+                              padding: const EdgeInsets.symmetric(vertical: 22),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(28),
+                              ),
+                              elevation: canUnlock ? 8 : 0,
                             ),
-                            elevation: isProfileReadyToUnlock ? 8 : 0,
-                          ),
-                          child: Text(
-                            'Lås op',
-                            style: TextStyle(
-                              fontSize: 20,
-                              fontWeight: FontWeight.w700,
-                              color: Colors.white.withValues(
-                                alpha: isProfileReadyToUnlock ? 1 : 0.7,
+                            child: Text(
+                              _isUnlocking ? 'Låser op...' : buttonLabel,
+                              style: TextStyle(
+                                fontSize: 20,
+                                fontWeight: FontWeight.w700,
+                                color: Colors.white.withValues(alpha: canUnlock ? 1 : 0.85),
                               ),
                             ),
                           ),
                         ),
-                      ),
                     ],
                   ),
                 ),
@@ -250,7 +316,7 @@ class MatchProfileScreen extends StatelessWidget {
                             ),
                           ),
                           Text(
-                            '$name, $age',
+                            '${widget.name}, ${widget.age}',
                             style: const TextStyle(
                               fontSize: 26,
                               fontWeight: FontWeight.w800,
