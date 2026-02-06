@@ -184,7 +184,7 @@ class _OpenChatsScreenState extends State<OpenChatsScreen> {
                     style: TextStyle(
                       fontSize: 14,
                       fontWeight: FontWeight.w700,
-                      color: Colors.black.withOpacity(0.75),
+                      color: Colors.black.withValues(alpha: 0.75),
                     ),
                   ),
                 ),
@@ -208,7 +208,7 @@ class _OpenChatsScreenState extends State<OpenChatsScreen> {
                       return ListView.separated(
                         padding: const EdgeInsets.only(bottom: 16),
                         itemCount: chats.length,
-                        separatorBuilder: (_, __) => const SizedBox(height: 10),
+                        separatorBuilder: (_, _) => const SizedBox(height: 10),
                         itemBuilder: (context, i) {
                           final chat = chats[i];
                           return _ChatCard(
@@ -333,7 +333,7 @@ class _ChatCard extends StatelessWidget {
               child: LinearProgressIndicator(
                 minHeight: 6,
                 value: chat.uiProgress.clamp(0.0, 1.0),
-                backgroundColor: Colors.black.withOpacity(0.06),
+                backgroundColor: Colors.black.withValues(alpha: 0.06),
                 valueColor: const AlwaysStoppedAnimation(AppColors.primary),
               ),
             ),
@@ -387,7 +387,7 @@ class _StatusChip extends StatelessWidget {
       decoration: BoxDecoration(
         color: bg,
         borderRadius: BorderRadius.circular(999),
-        border: Border.all(color: fg.withOpacity(0.18)),
+        border: Border.all(color: fg.withValues(alpha: 0.18)),
       ),
       child: Text(
         text,

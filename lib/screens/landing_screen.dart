@@ -14,17 +14,16 @@ class LandingScreen extends StatefulWidget {
 }
 
 class _LandingScreenState extends State<LandingScreen> {
-  Future<void> _handleEntry(BuildContext context) async {
+  Future<void> _handleEntry() async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setBool('isLoggedIn', true);
-    if (!context.mounted) return;
+    if (!mounted) return;
     Navigator.of(context).pushReplacement(
       MaterialPageRoute(builder: (_) => const MainShell()),
     );
   }
 
-  Future<void> _showEmailSheet(
-    BuildContext context, {
+  Future<void> _showEmailSheet({
     required bool shouldCreateUser,
   }) async {
     final emailController = TextEditingController();
@@ -187,9 +186,9 @@ class _LandingScreenState extends State<LandingScreen> {
                 ElevatedButton(
                   onPressed: () {
                     if (SupabaseConfig.isConfigured) {
-                      _showEmailSheet(context, shouldCreateUser: false);
+                      _showEmailSheet(shouldCreateUser: false);
                     } else {
-                      _handleEntry(context);
+                      _handleEntry();
                     }
                   },
                   style: ElevatedButton.styleFrom(
@@ -213,7 +212,7 @@ class _LandingScreenState extends State<LandingScreen> {
                 OutlinedButton(
                   onPressed: () {
                     if (SupabaseConfig.isConfigured) {
-                      _showEmailSheet(context, shouldCreateUser: true);
+                      _showEmailSheet(shouldCreateUser: true);
                     } else {
                       Navigator.of(context).push(
                         MaterialPageRoute(builder: (_) => const EnrollScreen()),

@@ -175,7 +175,7 @@ class _EnrollScreenState extends State<EnrollScreen> {
                       _selectedOwnGender = option;
                     });
                   },
-                  selectedColor: AppColors.primary.withOpacity(0.15),
+                  selectedColor: AppColors.primary.withValues(alpha: 0.15),
                   backgroundColor: AppColors.surfaceTint,
                   labelStyle: TextStyle(
                     color: _selectedOwnGender == option
@@ -221,7 +221,7 @@ class _EnrollScreenState extends State<EnrollScreen> {
                       _selectedGender = option;
                     });
                   },
-                  selectedColor: AppColors.primary.withOpacity(0.15),
+                  selectedColor: AppColors.primary.withValues(alpha: 0.15),
                   backgroundColor: AppColors.surfaceTint,
                   labelStyle: TextStyle(
                     color: _selectedGender == option

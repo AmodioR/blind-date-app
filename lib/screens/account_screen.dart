@@ -114,6 +114,10 @@ class _AccountScreenState extends State<AccountScreen> {
         distanceKm: _distance.round(),
       ),
     );
+    if (!mounted) {
+      return;
+    }
+
     setState(() {
       _initialName = name;
       _initialAge = age > 0 ? age.toString() : '';
@@ -372,7 +376,7 @@ class _AccountScreenState extends State<AccountScreen> {
                                           });
                                         },
                                         selectedColor: AppColors.primary
-                                            .withOpacity(0.15),
+                                            .withValues(alpha: 0.15),
                                         backgroundColor: AppColors.surfaceTint,
                                         labelStyle: TextStyle(
                                           color: _selectedOwnGender == option
@@ -450,7 +454,7 @@ class _AccountScreenState extends State<AccountScreen> {
                                           });
                                         },
                                         selectedColor: AppColors.primary
-                                            .withOpacity(0.15),
+                                            .withValues(alpha: 0.15),
                                         backgroundColor: AppColors.surfaceTint,
                                         labelStyle: TextStyle(
                                           color: _selectedGender == option
