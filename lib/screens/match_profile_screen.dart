@@ -33,6 +33,7 @@ class _MatchProfileScreenState extends State<MatchProfileScreen> {
   MatchModel? _match;
   int _myCount = 0;
   int _theirCount = 0;
+  bool _loading = true;
   bool _isUnlocking = false;
 
   double get _unlockProgress {
@@ -72,13 +73,14 @@ class _MatchProfileScreenState extends State<MatchProfileScreen> {
   }
 
   Future<void> _loadInitialMatch() async {
-    final match = await _repository.getMatch(widget.matchId);
+    final match = await _repository.getMatchById(widget.matchId);
     if (!mounted) {
       return;
     }
 
     setState(() {
       _match = match?.copyWith(myCount: _myCount, theirCount: _theirCount);
+      _loading = false;
     });
   }
 
@@ -121,36 +123,20 @@ class _MatchProfileScreenState extends State<MatchProfileScreen> {
     if (currentUserId == null) {
       return;
     }
+    if (row.isEmpty) {
+      return;
+    }
 
-    final previous = _match;
-    final userA = row['user_a']?.toString() ?? previous?.userA ?? '';
-    final userB = row['user_b']?.toString() ?? previous?.userB ?? '';
-
-    final isUserA = currentUserId == userA || (currentUserId != userB && previous != null && currentUserId == previous.userA);
-
-    final unlockedByA = row.containsKey('unlocked_by_a')
-        ? row['unlocked_by_a'] == true
-        : (previous == null ? false : (isUserA ? previous.unlockedByMe : previous.unlockedByOther));
-    final unlockedByB = row.containsKey('unlocked_by_b')
-        ? row['unlocked_by_b'] == true
-        : (previous == null ? false : (isUserA ? previous.unlockedByOther : previous.unlockedByMe));
-
-    final rawUnlockedAt = row.containsKey('unlocked_at') ? row['unlocked_at'] : null;
-    final unlockedAt = rawUnlockedAt == null
-        ? previous?.unlockedAt
-        : DateTime.tryParse(rawUnlockedAt.toString());
+    final updatedMatch = MatchModel.fromDatabaseRow(
+      row,
+      currentUserId: currentUserId,
+      myCount: _myCount,
+      theirCount: _theirCount,
+    );
 
     setState(() {
-      _match = MatchModel(
-        id: row['id']?.toString() ?? previous?.id ?? widget.matchId,
-        userA: userA,
-        userB: userB,
-        unlockedByMe: isUserA ? unlockedByA : unlockedByB,
-        unlockedByOther: isUserA ? unlockedByB : unlockedByA,
-        unlockedAt: unlockedAt,
-        myCount: _myCount,
-        theirCount: _theirCount,
-      );
+      _match = updatedMatch;
+      _loading = false;
     });
   }
 
@@ -263,10 +249,10 @@ class _MatchProfileScreenState extends State<MatchProfileScreen> {
     final unlockedByMe = match?.unlockedByMe ?? false;
     final unlockedByOther = match?.unlockedByOther ?? false;
     final isFullyUnlocked = match?.isFullyUnlocked ?? false;
-    final isLocked = !isFullyUnlocked;
+    final isLocked = _loading || !isFullyUnlocked;
 
     final canUnlock = isReadyToUnlock && !unlockedByMe && isLocked && !_isUnlocking;
-    final showButton = !isFullyUnlocked;
+    final showButton = !_loading && !isFullyUnlocked;
     final buttonLabel = unlockedByMe && !unlockedByOther ? 'Afventer match' : 'Lås op';
 
     return Scaffold(
