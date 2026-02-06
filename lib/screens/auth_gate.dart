@@ -1,12 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
-import '../data/profile/profile_repository_factory.dart';
+
 import '../data/profile/profile_model.dart';
-import 'enroll_screen.dart';
+import '../data/profile/profile_repository_factory.dart';
+import 'enroll_onboarding_screen.dart';
 import 'landing_screen.dart';
 import 'main_tab_screen.dart';
-import 'onboarding_screen.dart';
 
 class AuthGate extends StatefulWidget {
   const AuthGate({super.key});
@@ -18,7 +17,6 @@ class AuthGate extends StatefulWidget {
 class _AuthGateState extends State<AuthGate> {
   Session? _currentSession;
   Future<Profile?>? _profileFuture;
-  Future<bool>? _hasSeenOnboardingFuture;
   _AuthDestination? _lastDestination;
 
   @override
@@ -28,7 +26,6 @@ class _AuthGateState extends State<AuthGate> {
     _currentSession = client.auth.currentSession;
     if (_currentSession != null) {
       _profileFuture = ProfileRepositoryFactory.create().loadProfile();
-      _hasSeenOnboardingFuture = _loadHasSeenOnboarding();
     }
   }
 
@@ -41,17 +38,10 @@ class _AuthGateState extends State<AuthGate> {
       _lastDestination = null;
       if (session == null) {
         _profileFuture = Future.value(null);
-        _hasSeenOnboardingFuture = null;
       } else {
         _profileFuture = ProfileRepositoryFactory.create().loadProfile();
-        _hasSeenOnboardingFuture = _loadHasSeenOnboarding();
       }
     });
-  }
-
-  Future<bool> _loadHasSeenOnboarding() async {
-    final prefs = await SharedPreferences.getInstance();
-    return prefs.getBool('hasSeenOnboarding') ?? false;
   }
 
   void _scheduleSessionUpdate(Session? session) {
@@ -104,35 +94,15 @@ class _AuthGateState extends State<AuthGate> {
               if (profileSnapshot.data == null) {
                 _scheduleNavigation(
                   _AuthDestination.enroll,
-                  const EnrollScreen(),
+                  const EnrollOnboardingScreen(),
                 );
                 return const _AuthLoadingScreen();
               }
-              final hasSeenOnboardingFuture = _hasSeenOnboardingFuture;
-              if (hasSeenOnboardingFuture == null) {
-                return const _AuthLoadingScreen();
-              }
-              return FutureBuilder<bool>(
-                future: hasSeenOnboardingFuture,
-                builder: (context, onboardingSnapshot) {
-                  if (onboardingSnapshot.connectionState != ConnectionState.done) {
-                    return const _AuthLoadingScreen();
-                  }
-                  final hasSeenOnboarding = onboardingSnapshot.data ?? false;
-                  if (!hasSeenOnboarding) {
-                    _scheduleNavigation(
-                      _AuthDestination.onboarding,
-                      const OnboardingScreen(),
-                    );
-                    return const _AuthLoadingScreen();
-                  }
-                  _scheduleNavigation(
-                    _AuthDestination.main,
-                    const MainTabScreen(),
-                  );
-                  return const _AuthLoadingScreen();
-                },
+              _scheduleNavigation(
+                _AuthDestination.main,
+                const MainTabScreen(),
               );
+              return const _AuthLoadingScreen();
             },
           );
         }
@@ -146,7 +116,7 @@ class _AuthGateState extends State<AuthGate> {
   }
 }
 
-enum _AuthDestination { landing, enroll, onboarding, main }
+enum _AuthDestination { landing, enroll, main }
 
 class _AuthLoadingScreen extends StatelessWidget {
   const _AuthLoadingScreen();
