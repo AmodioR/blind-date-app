@@ -14,6 +14,8 @@ class LandingScreen extends StatefulWidget {
 }
 
 class _LandingScreenState extends State<LandingScreen> {
+  bool _isPostLoginStabilizing = false;
+
   Future<void> _handleEntry() async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setBool('isLoggedIn', true);
@@ -79,6 +81,13 @@ class _LandingScreenState extends State<LandingScreen> {
                       builder: (_) => const EnrollOnboardingScreen(),
                     ),
                   );
+                } else if (!shouldCreateUser && mounted) {
+                  setState(() {
+                    _isPostLoginStabilizing = true;
+                  });
+                  await Future.delayed(const Duration(milliseconds: 400));
+                  if (!mounted) return;
+                  await _handleEntry();
                 }
               } on AuthException {
                 if (!sheetContext.mounted) return;
@@ -97,6 +106,7 @@ class _LandingScreenState extends State<LandingScreen> {
                   const SnackBar(content: Text('Noget gik galt. Prøv igen.')),
                 );
               } finally {
+                if (!sheetContext.mounted) return;
                 setSheetState(() {
                   isSending = false;
                 });
@@ -168,6 +178,46 @@ class _LandingScreenState extends State<LandingScreen> {
 
   @override
   Widget build(BuildContext context) {
+    if (_isPostLoginStabilizing) {
+      return Scaffold(
+        body: Container(
+          decoration: const BoxDecoration(
+            gradient: AppColors.premiumGradient,
+          ),
+          child: Center(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Image.asset(
+                  'assets/images/BDV4.png',
+                  height: 120,
+                  fit: BoxFit.contain,
+                ),
+                const SizedBox(height: 24),
+                const SizedBox(
+                  height: 28,
+                  width: 28,
+                  child: CircularProgressIndicator(
+                    strokeWidth: 2.6,
+                    color: AppColors.primary,
+                  ),
+                ),
+                const SizedBox(height: 14),
+                const Text(
+                  'Logger dig ind...',
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w600,
+                    color: AppColors.primaryDeep,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      );
+    }
+
     return Scaffold(
       body: Container(
         decoration: const BoxDecoration(
