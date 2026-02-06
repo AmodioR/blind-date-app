@@ -1,11 +1,20 @@
 import 'package:flutter/material.dart';
+
 import '../theme/app_colors.dart';
 import 'account_screen.dart';
+import 'app_session.dart';
 import 'home_screen.dart';
 import 'open_chats_screen.dart';
 
 class MainTabScreen extends StatefulWidget {
-  const MainTabScreen({super.key});
+  const MainTabScreen({
+    super.key,
+    required this.appSession,
+    required this.onLogout,
+  });
+
+  final AppSession appSession;
+  final Future<void> Function() onLogout;
 
   @override
   State<MainTabScreen> createState() => _MainTabScreenState();
@@ -14,10 +23,13 @@ class MainTabScreen extends StatefulWidget {
 class _MainTabScreenState extends State<MainTabScreen> {
   int _currentIndex = 0;
 
-  final List<Widget> _pages = const [
-    HomeScreen(),
-    OpenChatsScreen(),
-    AccountScreen(),
+  late final List<Widget> _pages = [
+    const HomeScreen(),
+    OpenChatsScreen(currentUserId: widget.appSession.userId),
+    AccountScreen(
+      initialProfile: widget.appSession.profile,
+      onLogout: widget.onLogout,
+    ),
   ];
 
   @override
