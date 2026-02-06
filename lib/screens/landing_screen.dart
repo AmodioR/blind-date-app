@@ -3,7 +3,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../config/supabase_config.dart';
 import '../theme/app_colors.dart';
-import 'enroll_screen.dart';
+import 'enroll_onboarding_screen.dart';
 import 'main_shell.dart';
 
 class LandingScreen extends StatefulWidget {
@@ -73,6 +73,13 @@ class _LandingScreenState extends State<LandingScreen> {
                 }
                 if (!sheetContext.mounted) return;
                 Navigator.of(sheetContext).pop();
+                if (shouldCreateUser && mounted) {
+                  Navigator.of(context).pushReplacement(
+                    MaterialPageRoute(
+                      builder: (_) => const EnrollOnboardingScreen(),
+                    ),
+                  );
+                }
               } on AuthException {
                 if (!sheetContext.mounted) return;
                 ScaffoldMessenger.of(sheetContext).showSnackBar(
@@ -215,7 +222,7 @@ class _LandingScreenState extends State<LandingScreen> {
                       _showEmailSheet(shouldCreateUser: true);
                     } else {
                       Navigator.of(context).push(
-                        MaterialPageRoute(builder: (_) => const EnrollScreen()),
+                        MaterialPageRoute(builder: (_) => const EnrollOnboardingScreen()),
                       );
                     }
                   },
